@@ -10,11 +10,11 @@ BRIDGE_RELEASE="develop"
 source ./utils.sh
 
 # Creating cluster role binding
-kubectl apply -f ../manifests/keptn/keptn-rbac.yaml
+kubectl apply -f ../manifests/keptn/rbac.yaml
 verify_kubectl $? "Creating cluster role for keptn failed."
 
 # Creating config map to store mapping
-kubectl apply -f ../manifests/keptn/keptn-org-configmap.yaml
+kubectl apply -f ../manifests/keptn/org-configmap.yaml
 verify_kubectl $? "Creating config map for keptn failed."
 
 # Mark internal docker registry as insecure registry for knative controller
