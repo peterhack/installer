@@ -17,23 +17,23 @@ spec:
         emptyDir: {}
       containers:
       - name: keptn-installer
-        image: keptn/installer:latest
+        image: keptn/installer:feature.283.20190603.0914
         env: 
         - name: CLUSTER_IPV4_CIDR
-          value: CLUSTER_IPV4_CIDR
+          value: 10.24.0.0/14
         - name: SERVICES_IPV4_CIDR
-          value: SERVICES_IPV4_CIDR
+          value: 10.27.240.0/20
         - name: GCLOUD_USER
-          value: GCLOUD_USER
+          value: florian.bacher@dynatrace.com
         - name: JENKINS_USER
-          value: JENKINS_USER
+          value: admin
         - name: JENKINS_PASSWORD
-          value: JENKINS_PASSWORD
+          value: AiTx4u8VyUV8tCKk
         - name: GITHUB_USER_NAME
-          value: GITHUB_USER_NAME
+          value: bacherfl
         - name: GITHUB_PERSONAL_ACCESS_TOKEN
-          value: GITHUB_PERSONAL_ACCESS_TOKEN
+          value: ce9a3b22f2b45b8982a96b743fff544e7f12c313
         - name: GITHUB_USER_EMAIL
-          value: GITHUB_USER_EMAIL
+          value: floruan.bacher@dynatrace.com
         - name: GITHUB_ORGANIZATION
-          value: GITHUB_ORGANIZATION
+          value: keptn-tiger
