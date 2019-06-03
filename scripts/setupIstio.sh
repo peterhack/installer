@@ -1,19 +1,17 @@
 #!/bin/bash
-CLUSTER_IPV4_CIDR=$1
-SERVICES_IPV4_CIDR=$2
 
 source ./utils.sh
 
-kubectl apply -f ../manifests/istio/crd-10.yaml.yaml
+kubectl apply -f ../manifests/istio/crd-10.yaml
 verify_kubectl $? "Creating istio custom resource definitions failed."
 
-kubectl apply -f ../manifests/istio/crd-11.yaml.yaml
+kubectl apply -f ../manifests/istio/crd-11.yaml
 verify_kubectl $? "Creating istio custom resource definitions failed."
 
-kubectl apply -f ../manifests/istio/crd-certmanager-10.yaml.yaml
+kubectl apply -f ../manifests/istio/crd-certmanager-10.yaml
 verify_kubectl $? "Creating istio custom resource definitions failed."
 
-kubectl apply -f ../manifests/istio/crd-certmanager-11.yaml.yaml
+kubectl apply -f ../manifests/istio/crd-certmanager-11.yaml
 verify_kubectl $? "Creating istio custom resource definitions failed."
 
 wait_for_crds "virtualservices,destinationrules,serviceentries,gateways,envoyfilters,clusterrbacconfigs,policies,meshpolicies,httpapispecbindings,httpapispecs,quotaspecbindings,quotaspecs,rules,attributemanifests,bypasses,circonuses,deniers,fluentds,kubernetesenvs,listcheckers,memquotas,noops,opas,prometheuses,rbacs,redisquotas,signalfxs,solarwindses,stackdrivers,statsds,stdios,apikeys,authorizations,checknothings,kuberneteses,listentries,logentries,edges,metrics,quotas,reportnothings,tracespans,rbacconfigs,serviceroles,servicerolebindings,adapters,instances,templates,handlers,cloudwatches,dogstatsds,sidecars,zipkins,clusterissuers,issuers,certificates,orders,challenges"

@@ -20,20 +20,20 @@ spec:
         image: keptn/installer:feature.283.20190603.0914
         env: 
         - name: CLUSTER_IPV4_CIDR
-          value: 10.24.0.0/14
+          value: CLUSTER_IPV4_CIDR
         - name: SERVICES_IPV4_CIDR
-          value: 10.27.240.0/20
+          value: SERVICES_IPV4_CIDR
         - name: GCLOUD_USER
-          value: florian.bacher@dynatrace.com
+          value: GCLOUD_USER
         - name: JENKINS_USER
-          value: admin
+          value: JENKINS_USER
         - name: JENKINS_PASSWORD
-          value: AiTx4u8VyUV8tCKk
+          value: JENKINS_PASSWORD
         - name: GITHUB_USER_NAME
-          value: bacherfl
+          value: GITHUB_USER_NAME
         - name: GITHUB_PERSONAL_ACCESS_TOKEN
-          value: ce9a3b22f2b45b8982a96b743fff544e7f12c313
+          value: GITHUB_PERSONAL_ACCESS_TOKEN
         - name: GITHUB_USER_EMAIL
-          value: floruan.bacher@dynatrace.com
+          value: GITHUB_USER_EMAIL
         - name: GITHUB_ORGANIZATION
-          value: keptn-tiger
+          value: GITHUB_ORGANIZATION

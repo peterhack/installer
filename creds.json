@@ -1,0 +1,11 @@
+{
+  "jenkinsUser": "admin",
+  "jenkinsPassword": "AiTx4u8VyUV8tCKk",
+  "githubUserName": "bacherfl",
+  "githubPersonalAccessToken": "ce9a3b22f2b45b8982a96b743fff544e7f12c313",
+  "githubUserEmail": "florian.bacher@dynatrace.com",
+  "githubOrg": "keptn-tiger",
+  "clusterName": "keptn-knative06",
+  "clusterZone": "us-central1-a",
+  "gkeProject": "sai-research"
+}

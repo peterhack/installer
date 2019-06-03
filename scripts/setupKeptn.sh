@@ -17,11 +17,6 @@ verify_kubectl $? "Creating cluster role for keptn failed."
 kubectl apply -f ../manifests/keptn/keptn-org-configmap.yaml
 verify_kubectl $? "Creating config map for keptn failed."
 
-# Mark internal docker registry as insecure registry for knative controller
-VAL=$(kubectl -n knative-serving get cm config-controller -o=json | jq -r .data.registriesSkippingTagResolving | awk '{print $1",'$REGISTRY_URL':5000"}')
-kubectl -n knative-serving get cm config-controller -o=yaml | yq w - data.registriesSkippingTagResolving $VAL | kubectl apply -f -
-verify_kubectl $? "Marking internal docker registry as insecure failed."
-
 # Deploy knative eventing channels
 kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/keptn-channel.yaml
 verify_kubectl $? "Creating keptn-channel channel failed."

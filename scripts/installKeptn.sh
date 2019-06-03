@@ -29,25 +29,6 @@ if [[ -z "${KEPTN_INSTALL_ENV}" ]]; then
   print_info "Connection to cluster successful"
 fi
 
-# Variables for installing Istio and Knative
-if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
-  print_debug "CLUSTER_IPV4_CIDR is not set, retrieve it using gcloud."
-  CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
-  if [[ $? != 0 ]]; then
-    print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${CLUSTER_IPV4_CIDR} property." && exit 1
-  fi
-  verify_variable "$CLUSTER_IPV4_CIDR" "CLUSTER_IPV4_CIDR is not defined in environment variable nor could it be retrieved using gcloud." 
-fi
-
-if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
-  print_debug "SERVICES_IPV4_CIDR is not set, retrieve it using gcloud."
-  SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
-  if [[ $? != 0 ]]; then
-    print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${SERVICES_IPV4_CIDR} property." && exit 1
-  fi
-  verify_variable "$SERVICES_IPV4_CIDR" "SERVICES_IPV4_CIDR is not defined in environment variable nor could it be retrieved using gcloud." 
-fi
-
 # Variables for creating cluster role binding
 if [[ -z "${GCLOUD_USER}" ]]; then
   print_debug "GCLOUD_USER is not set, retrieve it using gcloud."
@@ -81,13 +62,13 @@ print_info "Creating container registry done"
 
 # Install Istio service mesh
 print_info "Installing Istio"
-./setupIstio.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
+./setupIstio.sh
 verify_install_step $? "Installing Istio failed."
 print_info "Installing Istio done"
 
 # Install knative core components
 print_info "Installing Knative"
-./setupKnative.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
+./setupKnative.sh
 verify_install_step $? "Installing Knative failed."
 print_info "Installing Knative done"
 
