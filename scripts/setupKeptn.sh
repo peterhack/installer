@@ -1,13 +1,29 @@
 #!/bin/bash
+source ./utils.sh
+
 REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 
-CONTROL_RELEASE="develop"
-AUTHENTICATOR_RELEASE="develop"
-EVENTBROKER_RELEASE="develop"
-EVENTBROKER_EXT_RELEASE="develop"
-BRIDGE_RELEASE="develop"
+AUTHENTICATOR_RELEASE=$(yq r ../manifests/keptn/core.yaml core.authenticator.version)
+BRIDGE_RELEASE=$(yq r ../manifests/keptn/core.yaml core.bridge.version)
+CONTROL_RELEASE=$(yq r ../manifests/keptn/core.yaml core.control.version)
+EVENTBROKER_RELEASE=$(yq r ../manifests/keptn/core.yaml core.eventbroker.version)
+EVENTBROKER_EXT_RELEASE=$(yq r ../manifests/keptn/core.yaml core.eventbroker-ext.version)
 
-source ./utils.sh
+if [[ "$AUTHENTICATOR_RELEASE" == "null" || 
+  "$BRIDGE_RELEASE" == "null" || 
+  "$CONTROL_RELEASE" == "null" || 
+  "$EVENTBROKER_RELEASE" == "null" || 
+  "$EVENTBROKER_EXT_RELEASE" == "null" ]]; then
+  
+  print_error "Stopping keptn installation since the version of at least one core service is not defined."
+  echo "authenticator: $AUTHENTICATOR_RELEASE"
+  echo "bridge: $BRIDGE_RELEASE"
+  echo "control: $CONTROL_RELEASE"
+  echo "eventbroker: $EVENTBROKER_RELEASE"
+  echo "eventbroker-ext: $EVENTBROKER_EXT_RELEASE"
+
+  exit 1
+fi
 
 # Creating cluster role binding
 kubectl apply -f ../manifests/keptn/rbac.yaml

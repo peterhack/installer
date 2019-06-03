@@ -70,7 +70,7 @@ kubectl create clusterrolebinding keptn-cluster-admin-binding --clusterrole=clus
 verify_kubectl $? "Cluster role binding could not be created."
 
 # Create K8s namespaces
-kubectl apply -f ../manifests/keptn/namespace.yml
+kubectl apply -f ../manifests/keptn/namespace.yaml
 verify_kubectl $? "Creating keptn namespace failed."
 
 # Create container registry

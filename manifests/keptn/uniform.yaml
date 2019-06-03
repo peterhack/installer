@@ -1,0 +1,10 @@
+---
+uniform:
+  github-service:
+    version: "develop"
+  jenkins-service:
+    version: "develop"
+  pitometer-service:
+    version: "develop"
+  servicenow-service:
+    version: "develop"

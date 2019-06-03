@@ -1,0 +1,12 @@
+---
+core:
+  authenticator:
+    version: "develop"
+  bridge:
+    version: "develop"
+  control:
+    version: "develop"
+  eventbroker:
+    version: "develop"
+  eventbroker-ext:
+    version: "develop"

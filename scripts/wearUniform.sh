@@ -1,6 +1,10 @@
 #!/bin/bash
-
 source ./utils.sh
+
+JENKINS_SERVICE_RELEASE=$(yq r ../manifests/keptn/uniform.yaml uniform.jenkins-service.version)
+GITHUB_SERVICE_RELEASE=$(yq r ../manifests/keptn/uniform.yaml uniform.github-service.version)
+PITOMETER_SERVICE_RELEASE=$(yq r ../manifests/keptn/uniform.yaml uniform.pitometer-service.version)
+SERVICENOW_SERVICE_RELEASE=$(yq r ../manifests/keptn/uniform.yaml uniform.servicenow-service.version)
 
 REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 verify_variable "$REGISTRY_URL" "REGISTRY_URL is empty and could not be derived from docker registry service."
@@ -47,34 +51,25 @@ rm -rf keptn-services
 mkdir keptn-services
 cd keptn-services
 
-# Install services
-git clone --branch develop https://github.com/keptn/jenkins-service.git --single-branch
+# Install jenkins-service
+git clone --branch $JENKINS_SERVICE_RELEASE https://github.com/keptn/jenkins-service.git --single-branch
 cd jenkins-service
 chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URL $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_NAME $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN
 verify_install_step $? "Deploying jenkins-service failed."
 cd ..
 
-git clone --branch develop https://github.com/keptn/github-service.git --single-branch
-cd github-service
-chmod +x deploy.sh
-./deploy.sh
-verify_install_step $? "Deploying github-service failed."
-cd ..
+# Install github-service
+kubectl apply -f https://raw.githubusercontent.com/keptn/github-service/$GITHUB_SERVICE_RELEASE/config/service.yaml
+verify_kubectl $? "Deploying github-service failed."
 
-git clone --branch develop https://github.com/keptn/servicenow-service.git --single-branch
-cd servicenow-service
-chmod +x deploy.sh
-./deploy.sh
-verify_install_step $? "Deploying servicenow-service failed."
-cd ..
+# Install pitometer-service
+kubectl apply -f https://raw.githubusercontent.com/keptn/pitometer-service/$PITOMETER_SERVICE_RELEASE/config/service.yaml
+verify_kubectl $? "Deploying pitometer-service failed."
 
-git clone --branch develop https://github.com/keptn/pitometer-service.git --single-branch
-cd pitometer-service
-chmod +x deploy.sh
-./deploy.sh
-verify_install_step $? "Deploying pitometer-service failed."
-cd ..
+# Install servicenow-service
+kubectl apply -f https://raw.githubusercontent.com/keptn/servicenow-service/$SERVICENOW_SERVICE_RELEASE/config/servicenow-service.yaml
+verify_kubectl $? "Deploying servicenow-service failed."
 
 ##############################################
 ## Start validation of keptn's uniform      ##
