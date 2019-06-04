@@ -65,7 +65,7 @@ verify_kubectl $? "Could not connect to Kubernetes API."
 print_info "Connection to Kubernetes API successful"
 
 # Grant cluster admin rights to gcloud user
-kubectl create clusterrolebinding keptn-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
+#kubectl create clusterrolebinding keptn-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
 verify_kubectl $? "Cluster role binding could not be created."
 
 # Create K8s namespaces
