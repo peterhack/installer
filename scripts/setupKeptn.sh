@@ -1,6 +1,49 @@
 #!/bin/bash
 source ./utils.sh
 
+# Domain used for routing to keptn services
+DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].hostname)
+if [[ $? != 0 ]]; then
+  print_error "Failed to get ingress gateway information." && exit 1
+fi
+if [[ $DOMAIN = "null" ]]; then
+  print_info "Could not get ingress gateway domain name. Trying to retrieve IP address instead."
+  DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].ip)
+  if [[ $DOMAIN = "null" ]]; then
+    DOMAIN=""
+  fi
+  verify_variable "$DOMAIN" "DOMAIN is empty and could not be derived from the Istio ingress gateway."
+  DOMAIN="$DOMAIN.xip.io"
+fi
+
+# Set up SSL
+openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$DOMAIN"
+
+kubectl create --namespace istio-system secret tls istio-ingressgateway-certs --key key.pem --cert certificate.pem
+#verify_kubectl $? "Creating secret for istio-ingressgateway-certs failed."
+
+kubectl get gateway knative-ingress-gateway --namespace knative-serving -o=yaml | yq w - spec.servers[1].tls.mode SIMPLE | yq w - spec.servers[1].tls.privateKey /etc/istio/ingressgateway-certs/tls.key | yq w - spec.servers[1].tls.serverCertificate /etc/istio/ingressgateway-certs/tls.crt | kubectl apply -f -
+verify_kubectl $? "Updating knative ingress gateway with private key failed."
+
+rm key.pem
+rm certificate.pem
+
+# Add config map in keptn namespace that contains the domain - this will be used by other services as well
+cat ../manifests/keptn/keptn-domain-configmap.yaml | \
+  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' >> ../manifests/gen/keptn-domain-configmap.yaml
+
+kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml
+verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
+
+# Configure knative serving default domain
+rm -f ../manifests/gen/config-domain.yaml
+
+cat ../manifests/knative/config-domain.yaml | \
+  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' >> ../manifests/gen/config-domain.yaml
+
+kubectl apply -f ../manifests/gen/config-domain.yaml
+verify_kubectl $? "Creating configmap config-domain in knative-serving namespace failed."
+
 REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 
 # Creating cluster role binding
@@ -30,7 +73,7 @@ wait_for_channel_in_namespace "problem" "keptn"
 
 # Deploy keptn core components
 KEPTN_CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-verify_variable "$KEPTN_CHANNEL_URI" "KEPTN_CHANNEL_URI could not be derived from keptn-channel description." 
+verify_variable "$KEPTN_CHANNEL_URI" "KEPTN_CHANNEL_URI could not be derived from keptn-channel description."
 
 rm -f ../manifests/keptn/gen/core.yaml
 cat ../manifests/keptn/core.yaml | \
@@ -43,21 +86,6 @@ verify_kubectl $? "Deploying keptn core components failed."
 VAL=$(kubectl -n knative-serving get cm config-controller -o=json | jq -r .data.registriesSkippingTagResolving | awk '{print $1",'$REGISTRY_URL':5000"}')
 kubectl -n knative-serving get cm config-controller -o=yaml | yq w - data.registriesSkippingTagResolving $VAL | kubectl apply -f -
 verify_kubectl $? "Marking internal docker registry as insecure failed."
-
-# Set up SSL
-ISTIO_INGRESS_IP=$(kubectl describe svc istio-ingressgateway -n istio-system | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')
-verify_variable "$ISTIO_INGRESS_IP" "ISTIO_INGRESS_IP is empty and could not be derived from the Istio ingress gateway." 
-
-openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$ISTIO_INGRESS_IP.xip.io"
-
-kubectl create --namespace istio-system secret tls istio-ingressgateway-certs --key key.pem --cert certificate.pem
-#verify_kubectl $? "Creating secret for istio-ingressgateway-certs failed."
-
-kubectl get gateway knative-ingress-gateway --namespace knative-serving -o=yaml | yq w - spec.servers[1].tls.mode SIMPLE | yq w - spec.servers[1].tls.privateKey /etc/istio/ingressgateway-certs/tls.key | yq w - spec.servers[1].tls.serverCertificate /etc/istio/ingressgateway-certs/tls.crt | kubectl apply -f -
-verify_kubectl $? "Updating knative ingress gateway with private key failed."
-
-rm key.pem
-rm certificate.pem
 
 ##############################################
 ## Start validation of keptn installation   ##
