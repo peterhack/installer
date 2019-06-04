@@ -1,11 +1,6 @@
 #!/bin/bash
 source ./utils.sh
 
-JENKINS_SERVICE_RELEASE=$(yq r ../manifests/keptn/uniform.yaml uniform.jenkins-service.version)
-GITHUB_SERVICE_RELEASE=$(yq r ../manifests/keptn/uniform.yaml uniform.github-service.version)
-PITOMETER_SERVICE_RELEASE=$(yq r ../manifests/keptn/uniform.yaml uniform.pitometer-service.version)
-SERVICENOW_SERVICE_RELEASE=$(yq r ../manifests/keptn/uniform.yaml uniform.servicenow-service.version)
-
 REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 verify_variable "$REGISTRY_URL" "REGISTRY_URL is empty and could not be derived from docker registry service."
 
@@ -46,30 +41,23 @@ if [[ -z "${GITHUB_ORGANIZATION}" ]]; then
   verify_variable "$GITHUB_ORGANIZATION" "GITHUB_USER_EMAIL is not defined in environment variable nor in creds.json file." 
 fi
 
+# Deploy uniform
+kubectl apply -f ../manifests/keptn/uniform.yaml
+verify_kubectl $? "Deploying keptn's uniform failed."
+
 # Clean-up working directory
 rm -rf keptn-services
 mkdir keptn-services
 cd keptn-services
 
 # Install jenkins-service
-git clone --branch $JENKINS_SERVICE_RELEASE https://github.com/keptn/jenkins-service.git --single-branch
+git clone --branch develop https://github.com/keptn/jenkins-service.git --single-branch
 cd jenkins-service
 chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URL $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_NAME $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN
 verify_install_step $? "Deploying jenkins-service failed."
-cd ..
 
-# Install github-service
-kubectl apply -f https://raw.githubusercontent.com/keptn/github-service/$GITHUB_SERVICE_RELEASE/config/service.yaml
-verify_kubectl $? "Deploying github-service failed."
-
-# Install pitometer-service
-kubectl apply -f https://raw.githubusercontent.com/keptn/pitometer-service/$PITOMETER_SERVICE_RELEASE/config/service.yaml
-verify_kubectl $? "Deploying pitometer-service failed."
-
-# Install servicenow-service
-kubectl apply -f https://raw.githubusercontent.com/keptn/servicenow-service/$SERVICENOW_SERVICE_RELEASE/config/servicenow-service.yaml
-verify_kubectl $? "Deploying servicenow-service failed."
+cd ../..
 
 ##############################################
 ## Start validation of keptn's uniform      ##

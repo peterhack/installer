@@ -23,23 +23,23 @@ kubectl delete pods --all -n keptn
 verify_kubectl $? "Deleting pods in keptn namespace failed."
 wait_for_all_pods_in_namespace "keptn"
 
-# # ##############################################
-# # ## Start validation of Istio installation   ##
-# # ##############################################
+# ##############################################
+# ## Start validation of Istio installation   ##
+# ##############################################
 
-# # Wait max 4min for IP of Istio ingressgateway
-# # sleep 2
-# # RETRY=0
-# # while [ $RETRY -lt 24 ]
-# # do
-# #   ISTIO_INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-# #   if [[ -z "${ISTIO_INGRESS_IP}" ]]
-# #   then
-# #     echo "[keptn|DEBUG] IP of Istio ingressgateway: ${ISTIO_INGRESS_IP}"
-# #     echo "[keptn|INFO] IP of Istio ingressgateway available, can continue... "
-# #     break
-# #   fi
-# #   RETRY=$[$RETRY+1]
-# #   echo "[keptn|INFO] Retry: ${RETRY}/24 - Wait 10s for changes to apply... "
-# #   sleep 10
-# # done
+# Wait max 4min for IP of Istio ingressgateway
+# sleep 2
+# RETRY=0
+# while [ $RETRY -lt 24 ]
+# do
+#   ISTIO_INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+#   if [[ -z "${ISTIO_INGRESS_IP}" ]]
+#   then
+#     echo "[keptn|DEBUG] IP of Istio ingressgateway: ${ISTIO_INGRESS_IP}"
+#     echo "[keptn|INFO] IP of Istio ingressgateway available, can continue... "
+#     break
+#   fi
+#   RETRY=$[$RETRY+1]
+#   echo "[keptn|INFO] Retry: ${RETRY}/24 - Wait 10s for changes to apply... "
+#   sleep 10
+# done

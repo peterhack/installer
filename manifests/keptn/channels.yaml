@@ -1,0 +1,84 @@
+---
+# configuration-changed channel
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Channel
+metadata:
+  name: configuration-changed
+  namespace: keptn
+spec:
+  provisioner:
+    apiVersion: eventing.knative.dev/v1alpha1
+    kind: ClusterChannelProvisioner
+    name: in-memory-channel
+---
+# deployment-finished channel
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Channel
+metadata:
+  name: deployment-finished
+  namespace: keptn
+spec:
+  provisioner:
+    apiVersion: eventing.knative.dev/v1alpha1
+    kind: ClusterChannelProvisioner
+    name: in-memory-channel
+---
+# evaluation-done channel
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Channel
+metadata:
+  name: evaluation-done
+  namespace: keptn
+spec:
+  provisioner:
+    apiVersion: eventing.knative.dev/v1alpha1
+    kind: ClusterChannelProvisioner
+    name: in-memory-channel
+---
+# keptn channel
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Channel
+metadata:
+  name: keptn-channel
+  namespace: keptn
+spec:
+  provisioner:
+    apiVersion: eventing.knative.dev/v1alpha1
+    kind: ClusterChannelProvisioner
+    name: in-memory-channel
+---
+# new-artifact channel
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Channel
+metadata:
+  name: new-artifact
+  namespace: keptn
+spec:
+  provisioner:
+    apiVersion: eventing.knative.dev/v1alpha1
+    kind: ClusterChannelProvisioner
+    name: in-memory-channel
+---
+# problem channel
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Channel
+metadata:
+  name: problem
+  namespace: keptn
+spec:
+  provisioner:
+    apiVersion: eventing.knative.dev/v1alpha1
+    kind: ClusterChannelProvisioner
+    name: in-memory-channel
+---
+# tests-finished channel
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Channel
+metadata:
+  name: tests-finished
+  namespace: keptn
+spec:
+  provisioner:
+    apiVersion: eventing.knative.dev/v1alpha1
+    kind: ClusterChannelProvisioner
+    name: in-memory-channel
