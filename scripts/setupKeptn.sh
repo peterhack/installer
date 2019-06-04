@@ -8,7 +8,7 @@ kubectl apply -f ../manifests/keptn/rbac.yaml
 verify_kubectl $? "Creating cluster role for keptn failed."
 
 # Creating config map to store registry to github repo mapping
-kubectl apply -f ../manifests/keptn/org-configmap.yaml
+kubectl apply -f ../manifests/keptn/configmap.yaml
 verify_kubectl $? "Creating config map for keptn failed."
 
 # Create keptn secret

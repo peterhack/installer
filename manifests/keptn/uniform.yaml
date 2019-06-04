@@ -102,7 +102,7 @@ spec:
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Subscription
 metadata:
-  name: servicenow-sub
+  name: servicenow-subscription
   namespace: keptn
 spec:
   channel:
