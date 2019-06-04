@@ -1,5 +1,4 @@
 #!/bin/bash
-
 source ./utils.sh
 
 REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
@@ -42,39 +41,23 @@ if [[ -z "${GITHUB_ORGANIZATION}" ]]; then
   verify_variable "$GITHUB_ORGANIZATION" "GITHUB_USER_EMAIL is not defined in environment variable nor in creds.json file." 
 fi
 
+# Deploy uniform
+kubectl apply -f ../manifests/keptn/uniform.yaml
+verify_kubectl $? "Deploying keptn's uniform failed."
+
 # Clean-up working directory
 rm -rf keptn-services
 mkdir keptn-services
 cd keptn-services
 
-# Install services
+# Install jenkins-service
 git clone --branch develop https://github.com/keptn/jenkins-service.git --single-branch
 cd jenkins-service
 chmod +x deploy.sh
 ./deploy.sh $REGISTRY_URL $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_NAME $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN
 verify_install_step $? "Deploying jenkins-service failed."
-cd ..
 
-git clone --branch develop https://github.com/keptn/github-service.git --single-branch
-cd github-service
-chmod +x deploy.sh
-./deploy.sh
-verify_install_step $? "Deploying github-service failed."
-cd ..
-
-git clone --branch develop https://github.com/keptn/servicenow-service.git --single-branch
-cd servicenow-service
-chmod +x deploy.sh
-./deploy.sh
-verify_install_step $? "Deploying servicenow-service failed."
-cd ..
-
-git clone --branch develop https://github.com/keptn/pitometer-service.git --single-branch
-cd pitometer-service
-chmod +x deploy.sh
-./deploy.sh
-verify_install_step $? "Deploying pitometer-service failed."
-cd ..
+cd ../..
 
 ##############################################
 ## Start validation of keptn's uniform      ##
