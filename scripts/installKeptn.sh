@@ -46,12 +46,11 @@ verify_kubectl $? "Could not connect to Kubernetes API."
 print_info "Connection to Kubernetes API successful"
 
 # Grant cluster admin rights to gcloud user
-# TODO create vs apply
 kubectl create clusterrolebinding keptn-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
 verify_kubectl $? "Cluster role binding could not be created."
 
 # Create K8s namespaces
-kubectl apply -f ../manifests/keptn/keptn-namespace.yml
+kubectl apply -f ../manifests/keptn/namespace.yaml
 verify_kubectl $? "Creating keptn namespace failed."
 
 # Create container registry
