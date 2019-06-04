@@ -72,6 +72,7 @@ wait_for_channel_in_namespace "evaluation-done" "keptn"
 wait_for_channel_in_namespace "problem" "keptn"
 
 # Deploy keptn core components
+wait_for_hostname "keptn-channel" "keptn"
 KEPTN_CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
 verify_variable "$KEPTN_CHANNEL_URI" "KEPTN_CHANNEL_URI could not be derived from keptn-channel description."
 

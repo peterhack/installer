@@ -145,3 +145,27 @@ function wait_for_crds() {
     exit 1
   fi
 }
+
+# Waits for hostname of channel
+function wait_for_hostname() {
+  CHANNEL=$1; NAMESPACE=$2;
+  RETRY=0; RETRY_MAX=12;
+  HOSTNAME="";
+
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    HOSTNAME=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
+
+    if [[ ! -z "$HOSTNAME" ]]; then
+      print_debug "Host name of channel $CHANNEL in namespace $NAMESPACE available."
+      break
+    fi
+    RETRY=$[$RETRY+1]
+    print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 20s for hostname to be available ..."
+    sleep 20
+  done
+
+  if [[ -z "$HOSTNAME" ]]; then
+    print_error "Host name could not be derived from $CHANNEL in namespace $NAMESPACE."
+    exit 1
+  fi
+}
