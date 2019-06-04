@@ -1,0 +1,102 @@
+---
+# authenticator
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: authenticator
+  namespace: keptn
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: keptn/authenticator:latest
+            imagePullPolicy: Always
+            env:
+            - name: SECRET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: keptn-api-token
+                  key: keptn-api-token
+---
+# bridge
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: bridge
+  namespace: keptn
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: keptn/bridge:latest
+            imagePullPolicy: Always
+---
+# control
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: control
+  namespace: keptn
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: keptn/control:latest
+            imagePullPolicy: Always
+            env:
+            - name: CHANNEL_URI
+              value: CHANNEL_URI_PLACEHOLDER
+---
+# eventbroker-ext
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: event-broker-ext
+  namespace: keptn
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: keptn/eventbroker-ext:latest
+            imagePullPolicy: Always
+---
+# eventbroker
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: event-broker
+  namespace: keptn
+  labels:
+    serving.knative.dev/visibility: cluster-local
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: keptn/eventbroker:latest
+            imagePullPolicy: Always
+

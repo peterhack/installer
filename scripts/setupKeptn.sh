@@ -1,95 +1,48 @@
 #!/bin/bash
-REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
-
-CONTROL_RELEASE="develop"
-AUTHENTICATOR_RELEASE="develop"
-EVENTBROKER_RELEASE="develop"
-EVENTBROKER_EXT_RELEASE="develop"
-BRIDGE_RELEASE="develop"
-
 source ./utils.sh
 
+REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
+
 # Creating cluster role binding
-kubectl apply -f ../manifests/keptn/keptn-rbac.yaml
+kubectl apply -f ../manifests/keptn/rbac.yaml
 verify_kubectl $? "Creating cluster role for keptn failed."
 
-# Creating config map to store mapping
-kubectl apply -f ../manifests/keptn/keptn-org-configmap.yaml
+# Creating config map to store registry to github repo mapping
+kubectl apply -f ../manifests/keptn/configmap.yaml
 verify_kubectl $? "Creating config map for keptn failed."
+
+# Create keptn secret
+KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
+verify_variable "$KEPTN_API_TOKEN" "KEPTN_API_TOKEN could not be derived." 
+kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN"
+
+# Deploy keptn channels
+kubectl apply -f ../manifests/keptn/channels.yaml
+verify_kubectl $? "Deploying keptn channels failed."
+
+wait_for_channel_in_namespace "keptn-channel" "keptn"
+wait_for_channel_in_namespace "new-artifact" "keptn"
+wait_for_channel_in_namespace "configuration-changed" "keptn"
+wait_for_channel_in_namespace "deployment-finished" "keptn"
+wait_for_channel_in_namespace "tests-finished" "keptn"
+wait_for_channel_in_namespace "evaluation-done" "keptn"
+wait_for_channel_in_namespace "problem" "keptn"
+
+# Deploy keptn core components
+KEPTN_CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
+verify_variable "$KEPTN_CHANNEL_URI" "KEPTN_CHANNEL_URI could not be derived from keptn-channel description." 
+
+rm -f ../manifests/keptn/gen/core.yaml
+cat ../manifests/keptn/core.yaml | \
+  sed 's~CHANNEL_URI_PLACEHOLDER~'"$KEPTN_CHANNEL_URI"'~' >> ../manifests/keptn/gen/core.yaml
+  
+kubectl apply -f ../manifests/keptn/gen/core.yaml
+verify_kubectl $? "Deploying keptn core components failed."
 
 # Mark internal docker registry as insecure registry for knative controller
 VAL=$(kubectl -n knative-serving get cm config-controller -o=json | jq -r .data.registriesSkippingTagResolving | awk '{print $1",'$REGISTRY_URL':5000"}')
 kubectl -n knative-serving get cm config-controller -o=yaml | yq w - data.registriesSkippingTagResolving $VAL | kubectl apply -f -
 verify_kubectl $? "Marking internal docker registry as insecure failed."
-
-# Deploy knative eventing channels
-kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/keptn-channel.yaml
-verify_kubectl $? "Creating keptn-channel channel failed."
-wait_for_channel_in_namespace "keptn-channel" "keptn"
-
-kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/new-artifact-channel.yaml
-verify_kubectl $? "Creating new-artifact channel failed."
-wait_for_channel_in_namespace "new-artifact" "keptn"
-
-kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/configuration-changed-channel.yaml
-verify_kubectl $? "Creating configuration-changed channel failed."
-wait_for_channel_in_namespace "configuration-changed" "keptn"
-
-kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/deployment-finished-channel.yaml
-verify_kubectl $? "Creating deployment-finished channel failed."
-wait_for_channel_in_namespace "deployment-finished" "keptn"
-
-kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/tests-finished-channel.yaml
-verify_kubectl $? "Creating tests-finished channel failed."
-wait_for_channel_in_namespace "tests-finished" "keptn"
-
-kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/evaluation-done-channel.yaml
-verify_kubectl $? "Creating evaluation-done channel failed."
-wait_for_channel_in_namespace "evaluation-done" "keptn"
-
-kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/problem-channel.yaml
-verify_kubectl $? "Creating problem channel failed."
-wait_for_channel_in_namespace "problem" "keptn"
-
-KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
-verify_variable "$KEPTN_API_TOKEN" "KEPTN_API_TOKEN could not be derived." 
-
-kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN"
-#verify_kubectl $? "Creating secret for keptn api token failed."
-
-KEPTN_CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
-verify_variable "$KEPTN_CHANNEL_URI" "KEPTN_CHANNEL_URI could not be derived from keptn-channel description." 
-
-# Deploy eventbroker component
-kubectl delete -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/eventbroker.yaml --ignore-not-found
-kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker/$EVENTBROKER_RELEASE/config/eventbroker.yaml
-verify_kubectl $? "Deploying keptn eventbroker component failed."
-
-# Deploy eventbroker-ext component
-kubectl delete -f https://raw.githubusercontent.com/keptn/eventbroker-ext/$EVENTBROKER_EXT_RELEASE/config/eventbroker-ext.yaml --ignore-not-found
-kubectl apply -f https://raw.githubusercontent.com/keptn/eventbroker-ext/$EVENTBROKER_EXT_RELEASE/config/eventbroker-ext.yaml
-verify_kubectl $? "Deploying keptn eventbroker-ext component failed."
-
-# Deploy authenticator component
-kubectl delete -f https://raw.githubusercontent.com/keptn/authenticator/$AUTHENTICATOR_RELEASE/config/authenticator.yaml --ignore-not-found
-kubectl apply -f https://raw.githubusercontent.com/keptn/authenticator/$AUTHENTICATOR_RELEASE/config/authenticator.yaml
-verify_kubectl $? "Deploying keptn authenticator component failed."
-
-# Deploy control component
-curl -o ../manifests/keptn/control.yaml https://raw.githubusercontent.com/keptn/control/$CONTROL_RELEASE/config/control.yaml
-
-rm -f ../manifests/keptn/gen/control.yaml
-cat ../manifests/keptn/control.yaml | \
-  sed 's~CHANNEL_URI_PLACEHOLDER~'"$KEPTN_CHANNEL_URI"'~' >> ../manifests/keptn/gen/control.yaml
-  
-kubectl delete -f ../manifests/keptn/gen/control.yaml --ignore-not-found
-kubectl apply -f ../manifests/keptn/gen/control.yaml
-verify_kubectl $? "Deploying keptn control component failed."
-
-# Deploy keptn's bridge
-kubectl delete -f https://raw.githubusercontent.com/keptn/bridge/$BRIDGE_RELEASE/config/bridge.yaml --ignore-not-found
-kubectl apply -f https://raw.githubusercontent.com/keptn/bridge/$BRIDGE_RELEASE/config/bridge.yaml
-verify_kubectl $? "Deploying keptn's bridge failed."
 
 # Set up SSL
 ISTIO_INGRESS_IP=$(kubectl describe svc istio-ingressgateway -n istio-system | grep "LoadBalancer Ingress:" | sed 's~LoadBalancer Ingress:[ \t]*~~')

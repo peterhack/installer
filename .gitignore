@@ -10,6 +10,8 @@ manifests/gen/k8s-jenkins-deployment.yml
 manifests/gen/cr.yml
 manifests/gen/config-domain.yaml
 manifests/gen/istio-knative.yaml
+manifests/keptn/gen/*
+
 scripts/logs/*.log
 scripts/keptn-services/*
 
