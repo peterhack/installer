@@ -3,6 +3,7 @@
 ## New Features
 - Configuration of keptn core and keptn's uniform centralized [#351](https://github.com/keptn/keptn/issues/351)
 - Deploy _helm-service_ as part of keptn's uniform [#388](https://github.com/keptn/keptn/issues/388)
+- Deploy _jmeter-service_ as part of keptn's uniform [#389](https://github.com/keptn/keptn/issues/389)
 - Removed deployment of internal container registry [#378](https://github.com/keptn/keptn/issues/378)
 
 ## Fixed Issues
