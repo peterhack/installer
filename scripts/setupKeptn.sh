@@ -44,8 +44,6 @@ cat ../manifests/knative/config-domain.yaml | \
 kubectl apply -f ../manifests/gen/config-domain.yaml
 verify_kubectl $? "Creating configmap config-domain in knative-serving namespace failed."
 
-REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
-
 # Creating cluster role binding
 kubectl apply -f ../manifests/keptn/rbac.yaml
 verify_kubectl $? "Creating cluster role for keptn failed."
@@ -82,11 +80,6 @@ cat ../manifests/keptn/core.yaml | \
   
 kubectl apply -f ../manifests/keptn/gen/core.yaml
 verify_kubectl $? "Deploying keptn core components failed."
-
-# Mark internal docker registry as insecure registry for knative controller
-VAL=$(kubectl -n knative-serving get cm config-controller -o=json | jq -r .data.registriesSkippingTagResolving | awk '{print $1",'$REGISTRY_URL':5000"}')
-kubectl -n knative-serving get cm config-controller -o=yaml | yq w - data.registriesSkippingTagResolving $VAL | kubectl apply -f -
-verify_kubectl $? "Marking internal docker registry as insecure failed."
 
 ##############################################
 ## Start validation of keptn installation   ##

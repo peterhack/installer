@@ -1,9 +1,6 @@
 #!/bin/bash
 source ./utils.sh
 
-REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
-verify_variable "$REGISTRY_URL" "REGISTRY_URL is empty and could not be derived from docker registry service."
-
 # Environment variables for jenkins-service
 if [[ -z "${JENKINS_USER}" ]]; then
   print_debug "JENKINS_USER not set, take it from creds.json"
@@ -54,7 +51,7 @@ cd keptn-services
 git clone --branch develop https://github.com/keptn/jenkins-service.git --single-branch
 cd jenkins-service
 chmod +x deploy.sh
-./deploy.sh $REGISTRY_URL $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_NAME $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN
+./deploy.sh "" $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_NAME $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN
 verify_install_step $? "Deploying jenkins-service failed."
 
 cd ../..

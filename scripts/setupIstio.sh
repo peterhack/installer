@@ -18,11 +18,6 @@ kubectl apply -f ../manifests/gen/istio-knative.yaml
 verify_kubectl $? "Creating all istio components failed."
 wait_for_all_pods_in_namespace "istio-system"
 
-# Delete all pods in keptn to apply Istio changes
-kubectl delete pods --all -n keptn
-verify_kubectl $? "Deleting pods in keptn namespace failed."
-wait_for_all_pods_in_namespace "keptn"
-
 # ##############################################
 # ## Start validation of Istio installation   ##
 # ##############################################

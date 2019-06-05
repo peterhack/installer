@@ -4,12 +4,8 @@ SERVICES_IPV4_CIDR=$2
 
 source ./utils.sh
 
-# Create namespace and container registry
 # Needed for pull request Travis Build - will be removed
 kubectl create namespace keptn #2> /dev/null
-
-./setupContainerRegistry.sh
-verify_install_step $? "Creating container registry failed."
 
 # Install knative serving, building, eventing
 for i in 1 2

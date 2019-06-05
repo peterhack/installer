@@ -30,7 +30,7 @@ echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-    source ./defineCredentialsUtils.sh
+    source ./utils.sh
     replaceCreds
 fi
 
