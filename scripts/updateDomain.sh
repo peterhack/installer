@@ -1,5 +1,5 @@
 #!/bin/sh
-
+source ./utils.sh 
 DOMAIN=$1
 
 if [[ -z "${JENKINS_USER}" ]]; then
@@ -71,14 +71,14 @@ cat ../manifests/keptn/keptn-domain-configmap.yaml | \
 kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml
 verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
 
-git clone --branch feature/283/xip-replacement https://github.com/keptn/jenkins-service.git --single-branch
+git clone --branch develop https://github.com/keptn/jenkins-service.git --single-branch
 cd jenkins-service
 chmod +x deploy.sh
 ./deploy.sh "" $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_NAME $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN
 
 # re-deploy github service
 rm github-service.yaml
-wget -q -O - https://raw.githubusercontent.com/keptn/github-service/feature/283/xip-replacement/config/service.yaml | yq w - spec.runLatest.configuration.revisionTemplate.spec.container keptn/github-service:feature.283.20190522.0928 >> github-service.yaml
+wget -q -O - https://raw.githubusercontent.com/keptn/github-service/develop/config/service.yaml | yq w - spec.runLatest.configuration.revisionTemplate.spec.container keptn/github-service:feature.283.20190522.0928 >> github-service.yaml
 
 kubectl delete -f github-service.yaml
 kubectl apply -f github-service.yaml
