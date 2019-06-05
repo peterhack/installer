@@ -21,7 +21,7 @@ spec:
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Subscription
 metadata:
-  name: github-keptn-channel-subscription
+  name: github-service-keptn-channel-subscription
   namespace: keptn
 spec:
   channel:
@@ -37,7 +37,7 @@ spec:
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Subscription
 metadata:
-  name: github-new-artifact-subscription
+  name: github-service-new-artifact-subscription
   namespace: keptn
 spec:
   channel:
@@ -102,7 +102,7 @@ spec:
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Subscription
 metadata:
-  name: servicenow-subscription
+  name: servicenow-service-problem-subscription
   namespace: keptn
 spec:
   channel:
@@ -114,3 +114,37 @@ spec:
       apiVersion: serving.knative.dev/v1alpha1
       kind: Service
       name: servicenow-service
+---
+# helm-service
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: helm-service
+  namespace: keptn
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: keptn/helm-service:latest
+            imagePullPolicy: Always
+---
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Subscription
+metadata:
+  name: helm-service-configuration-changed-subscription
+  namespace: keptn
+spec:
+  channel:
+    apiVersion: eventing.knative.dev/v1alpha1
+    kind: Channel
+    name: configuration-changed
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1alpha1
+      kind: Service
+      name: helm-service

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keptn-domain
+  namespace: keptn
+data:
+  app_domain: 35.190.174.86.xip.io
