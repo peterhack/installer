@@ -14,17 +14,5 @@ kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-ad
 
 kubectl create -f ../manifests/k8s-namespaces.yml 
 
-# Create container registry
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-pvc.yml
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-deployment.yml
-kubectl create -f ../manifests/container-registry/k8s-docker-registry-service.yml
-
-echo "Wait 10s for docker service to get ip..."
-sleep 10
-
-# Create a route for the docker registry service
-# Store the docker registry route in a variable
-export REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep "IP:" | sed 's~IP:[ \t]*~~')
-
 kubectl apply -f ../manifests/istio/istio-crds.yml
 kubectl apply -f ../manifests/istio/istio-demo.yml

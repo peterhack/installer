@@ -76,8 +76,7 @@ cd jenkins-service
 chmod +x deploy.sh
 ./deploy.sh "" $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_NAME $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN
 
-
-# redeploy github service
+# re-deploy github service
 rm github-service.yaml
 wget -q -O - https://raw.githubusercontent.com/keptn/github-service/feature/283/xip-replacement/config/service.yaml | yq w - spec.runLatest.configuration.revisionTemplate.spec.container keptn/github-service:feature.283.20190522.0928 >> github-service.yaml
 
