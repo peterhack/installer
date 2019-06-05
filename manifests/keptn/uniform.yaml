@@ -121,6 +121,8 @@ kind: Service
 metadata:
   name: helm-service
   namespace: keptn
+  labels:
+    serving.knative.dev/visibility: cluster-local
 spec:
   runLatest:
     configuration:
