@@ -44,7 +44,7 @@ print_debug "Update $SERVICENAME service"
 SERVICE_REVISION=$(kubectl get revisions --namespace=keptn | grep $SERVICENAME | cut -d' ' -f1)
 kubectl get ksvc $SERVICENAME -n keptn -o=yaml > $SERVICENAME-deployment.yaml
 verify_kubectl $? "$SERVICENAME could not be retrieved."
-yq w -i $SERVICENAME-deployment.yaml spec.runLatest.configuration.revisionTemplate.spec.container.image keptn/$SERVICENAME:0.2.2
+yq w -i $SERVICENAME-deployment.yaml spec.runLatest.configuration.revisionTemplate.spec.container.image keptn/$SERVICENAME:0.2.3
 kubectl apply -f $SERVICENAME-deployment.yaml
 verify_kubectl $? "Updating of $SERVICENAME failed."
 print_debug "Removing old revision of $SERVICENAME service"
@@ -98,7 +98,7 @@ print_debug "Update $SERVICENAME service"
 SERVICE_REVISION=$(kubectl get revisions --namespace=keptn | grep $SERVICENAME | cut -d' ' -f1)
 kubectl get ksvc $SERVICENAME -n keptn -o=yaml > $SERVICENAME-deployment.yaml
 verify_kubectl $? "$SERVICENAME could not be retrieved."
-yq w -i $SERVICENAME-deployment.yaml spec.runLatest.configuration.revisionTemplate.spec.container.image keptn/$SERVICENAME:0.2.0
+yq w -i $SERVICENAME-deployment.yaml spec.runLatest.configuration.revisionTemplate.spec.container.image keptn/$SERVICENAME:0.2.1
 kubectl apply -f $SERVICENAME-deployment.yaml
 verify_kubectl $? "Updating of $SERVICENAME failed."
 print_debug "Removing old revision of $SERVICENAME service"
@@ -141,7 +141,7 @@ rm $SERVICENAME-deployment.yaml
 
 SERVICENAME=bridge
 print_debug "Install $SERVICENAME"
-BRIDGE_RELEASE="0.1.0"
+BRIDGE_RELEASE="0.1.1"
 kubectl delete -f https://raw.githubusercontent.com/keptn/bridge/$BRIDGE_RELEASE/config/bridge.yaml --ignore-not-found
 kubectl apply -f https://raw.githubusercontent.com/keptn/bridge/$BRIDGE_RELEASE/config/bridge.yaml
 verify_kubectl $? "Deploying keptn's bridge failed."

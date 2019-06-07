@@ -1,11 +1,11 @@
 #!/bin/bash
 REGISTRY_URL=$(kubectl describe svc docker-registry -n keptn | grep IP: | sed 's~IP:[ \t]*~~')
 
-CONTROL_RELEASE="0.2.2"
+CONTROL_RELEASE="0.2.3"
 AUTHENTICATOR_RELEASE="0.2.2"
 EVENTBROKER_RELEASE="0.2.2"
 EVENTBROKER_EXT_RELEASE="0.2.2"
-BRIDGE_RELEASE="0.1.0"
+BRIDGE_RELEASE="0.1.1"
 
 source ./utils.sh
 
