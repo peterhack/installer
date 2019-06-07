@@ -1,4 +1,4 @@
-# Release Notes 0.2.2
+# Release Notes 0.2.3
 
 This is a hotfix of the keptn installer.
 
@@ -16,7 +16,7 @@ This is a hotfix of the keptn installer.
 keptn is installed by using these images from the [keptn Dockerhub registry](https://hub.docker.com/u/keptn):
 
 Installer:
-- keptn/installer:0.2.2
+- keptn/installer:0.2.3
 
 Core services:
 - keptn/authenticator:0.2.2
