@@ -201,12 +201,11 @@ spec:
         istio: cluster-local-gateway
       annotations:
         sidecar.istio.io/inject: "false"
-        scheduler.alpha.kubernetes.io/critical-pod: ""
     spec:
       serviceAccountName: cluster-local-gateway-service-account
       containers:
         - name: istio-proxy
-          image: "docker.io/istio/proxyv2:1.1.1"
+          image: "docker.io/istio/proxyv2:1.1.3"
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
@@ -259,7 +258,7 @@ spec:
           resources:
             requests:
               cpu: 10m
-
+            
           env:
           - name: POD_NAME
             valueFrom:
@@ -276,6 +275,11 @@ spec:
               fieldRef:
                 apiVersion: v1
                 fieldPath: status.podIP
+          - name: HOST_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.hostIP
           - name: ISTIO_META_POD_NAME
             valueFrom:
               fieldRef:
@@ -308,7 +312,7 @@ spec:
         secret:
           secretName: "istio-clusterlocalgateway-ca-certs"
           optional: true
-      affinity:
+      affinity:      
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
@@ -340,7 +344,7 @@ spec:
               - key: beta.kubernetes.io/arch
                 operator: In
                 values:
-                - s390x
+                - s390x      
 ---
 
 ---
@@ -377,7 +381,7 @@ spec:
 
 ---
 # Source: istio/charts/mixer/templates/deployment.yaml
-
+ 
 
 ---
 # Source: istio/charts/mixer/templates/poddisruptionbudget.yaml
