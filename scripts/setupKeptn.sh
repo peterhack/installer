@@ -1,120 +1,91 @@
 #!/bin/bash
-
-LOG_LOCATION=./logs
-exec > >(tee -i $LOG_LOCATION/installKeptn.log)
-exec 2>&1
-
 source ./utils.sh
 
-print_info "Starting installation of keptn"
-
-# if [[ -z "${KEPTN_INSTALL_ENV}" ]]; then
-#   # Variables for gcloud
-#   if [[ -z "${CLUSTER_NAME}" ]]; then
-#     print_debug "CLUSTER_NAME is not set, take it from creds.json"
-#     CLUSTER_NAME=$(cat creds.json | jq -r '.clusterName')
-#     verify_variable "$CLUSTER_NAME" "CLUSTER_NAME is not defined in environment variable nor in creds.json file." 
-#   fi
-
-#   if [[ -z "${CLUSTER_ZONE}" ]]; then
-#     print_debug "CLUSTER_ZONE is not set, take it from creds.json"
-#     CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
-#     verify_variable "$CLUSTER_ZONE" "CLUSTER_NAME is not defined in environment variable nor in creds.json file." 
-#   fi
-
-#   # Test connection to cluster
-#   print_info "Test connection to cluster"
-#   ./testConnection.sh $CLUSTER_NAME $CLUSTER_ZONE
-#   verify_install_step $? "Could not connect to cluster. Please check the values for your Cluster Name, GKE Project, and Cluster Zone during the credentials setup."
-#   print_info "Connection to cluster successful"
-# fi
-
-# Variables for installing Istio and Knative
-if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
-  print_debug "CLUSTER_IPV4_CIDR is not set, take it from creds.json."
-  CLUSTER_IPV4_CIDR=$(cat creds.json | jq -r '.clusteripv4cidr')
-  #CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
-  #if [[ $? != 0 ]]; then
-  #  print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${CLUSTER_IPV4_CIDR} property." && exit 1
-  #fi
-  verify_variable "$CLUSTER_IPV4_CIDR" "CLUSTER_IPV4_CIDR is not defined in environment variable nor could it be retrieved from creds.json." 
+# Domain used for routing to keptn services
+DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].hostname)
+if [[ $? != 0 ]]; then
+  print_error "Failed to get ingress gateway information." && exit 1
+fi
+if [[ $DOMAIN = "null" ]]; then
+  print_info "Could not get ingress gateway domain name. Trying to retrieve IP address instead."
+  DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].ip)
+  if [[ $DOMAIN = "null" ]]; then
+    DOMAIN=""
+  fi
+  verify_variable "$DOMAIN" "DOMAIN is empty and could not be derived from the Istio ingress gateway."
+  DOMAIN="$DOMAIN.xip.io"
 fi
 
-if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
-  print_debug "SERVICES_IPV4_CIDR is not set, take it from creds.json."
-  SERVICES_IPV4_CIDR=$(cat creds.json | jq -r '.serveripv4cidr')
-  #SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
-  #if [[ $? != 0 ]]; then
-  #  print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${SERVICES_IPV4_CIDR} property." && exit 1
-  #fi
-  verify_variable "$SERVICES_IPV4_CIDR" "SERVICES_IPV4_CIDR is not defined in environment variable nor could it be retrieved from creds.json." 
-fi
+# Set up SSL
+openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$DOMAIN"
 
-# Variables for creating cluster role binding
-if [[ -z "${GCLOUD_USER}" ]]; then
-  print_debug "GCLOUD_USER is not set, take it from creds.json."
-  GCLOUD_USER=$(cat creds.json | jq -r '.gclouduser')
-  # GCLOUD_USER=$(gcloud config get-value account)
-  # if [[ $? != 0 ]]; then
-  #   print_error "gloud failed to get account values." && exit 1
-  # fi
-  verify_variable "$GCLOUD_USER" "GCLOUD_USER is not defined in environment variable nor could it be retrieved using gcloud." 
-fi
+kubectl create --namespace istio-system secret tls istio-ingressgateway-certs --key key.pem --cert certificate.pem
+#verify_kubectl $? "Creating secret for istio-ingressgateway-certs failed."
 
-# Test kubectl get namespaces
-print_info "Testing connection to Kubernetes API"
-kubectl get namespaces
-verify_kubectl $? "Could not connect to Kubernetes API."
-print_info "Connection to Kubernetes API successful"
+kubectl get gateway knative-ingress-gateway --namespace knative-serving -o=yaml | yq w - spec.servers[1].tls.mode SIMPLE | yq w - spec.servers[1].tls.privateKey /etc/istio/ingressgateway-certs/tls.key | yq w - spec.servers[1].tls.serverCertificate /etc/istio/ingressgateway-certs/tls.crt | kubectl apply -f -
+verify_kubectl $? "Updating knative ingress gateway with private key failed."
 
-# Grant cluster admin rights to gcloud user
-# TODO create vs apply
-kubectl create clusterrolebinding keptn-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
-verify_kubectl $? "Cluster role binding could not be created."
+rm key.pem
+rm certificate.pem
 
-# Create K8s namespaces
-kubectl apply -f ../manifests/keptn/keptn-namespace.yml
-verify_kubectl $? "Creating keptn namespace failed."
+# Add config map in keptn namespace that contains the domain - this will be used by other services as well
+cat ../manifests/keptn/keptn-domain-configmap.yaml | \
+  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' >> ../manifests/gen/keptn-domain-configmap.yaml
 
-# Create container registry
-print_info "Creating container registry"
-./setupContainerRegistry.sh
-verify_install_step $? "Creating container registry failed."
-print_info "Creating container registry done"
+kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml
+verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
 
-# Install Istio service mesh
-print_info "Installing Istio"
-./setupIstio.sh
-verify_install_step $? "Installing Istio failed."
-print_info "Installing Istio done"
+# Configure knative serving default domain
+rm -f ../manifests/gen/config-domain.yaml
 
-# Install knative core components
-print_info "Installing Knative"
-./setupKnative.sh
-verify_install_step $? "Installing Knative failed."
-print_info "Installing Knative done"
+cat ../manifests/knative/config-domain.yaml | \
+  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' >> ../manifests/gen/config-domain.yaml
 
-# Install keptn core services - Install keptn channels
-print_info "Installing keptn"
-./setupKeptn.sh
-verify_install_step $? "Installing keptn failed."
-print_info "Installing keptn done"
+kubectl apply -f ../manifests/gen/config-domain.yaml
+verify_kubectl $? "Creating configmap config-domain in knative-serving namespace failed."
 
-# Install keptn services
-print_info "Wear uniform"
-./wearUniform.sh
-verify_install_step $? "Installing keptn's uniform failed."
-print_info "Keptn wears uniform"
+# Creating cluster role binding
+kubectl apply -f ../manifests/keptn/rbac.yaml
+verify_kubectl $? "Creating cluster role for keptn failed."
 
-# Install done
-print_info "Installation of keptn complete."
+# Creating config map to store registry to github repo mapping
+kubectl apply -f ../manifests/keptn/configmap.yaml
+verify_kubectl $? "Creating config map for keptn failed."
 
-# Retrieve keptn endpoint and api-token
-KEPTN_ENDPOINT=https://$(kubectl get ksvc -n keptn control -o=yaml | yq r - status.domain)
-KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode)
+# Create keptn secret
+KEPTN_API_TOKEN=$(head -c 16 /dev/urandom | base64)
+verify_variable "$KEPTN_API_TOKEN" "KEPTN_API_TOKEN could not be derived." 
+kubectl create secret generic -n keptn keptn-api-token --from-literal=keptn-api-token="$KEPTN_API_TOKEN"
 
-print_info "keptn endpoint: $KEPTN_ENDPOINT"
-print_info "keptn api-token: $KEPTN_API_TOKEN"
+# Deploy keptn channels
+kubectl apply -f ../manifests/keptn/channels.yaml
+verify_kubectl $? "Deploying keptn channels failed."
 
-#print_info "To retrieve the keptn API token, please execute the following command:"
-#print_info "kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode"
+wait_for_channel_in_namespace "keptn-channel" "keptn"
+wait_for_channel_in_namespace "new-artifact" "keptn"
+wait_for_channel_in_namespace "configuration-changed" "keptn"
+wait_for_channel_in_namespace "deployment-finished" "keptn"
+wait_for_channel_in_namespace "tests-finished" "keptn"
+wait_for_channel_in_namespace "evaluation-done" "keptn"
+wait_for_channel_in_namespace "problem" "keptn"
+
+# Deploy keptn core components
+wait_for_hostname "keptn-channel" "keptn"
+KEPTN_CHANNEL_URI=$(kubectl describe channel keptn-channel -n keptn | grep "Hostname:" | sed 's~[ \t]*Hostname:[ \t]*~~')
+verify_variable "$KEPTN_CHANNEL_URI" "KEPTN_CHANNEL_URI could not be derived from keptn-channel description."
+
+rm -f ../manifests/keptn/gen/core.yaml
+cat ../manifests/keptn/core.yaml | \
+  sed 's~CHANNEL_URI_PLACEHOLDER~'"$KEPTN_CHANNEL_URI"'~' >> ../manifests/keptn/gen/core.yaml
+  
+kubectl apply -f ../manifests/keptn/gen/core.yaml
+verify_kubectl $? "Deploying keptn core components failed."
+
+##############################################
+## Start validation of keptn installation   ##
+##############################################
+wait_for_all_pods_in_namespace "keptn"
+
+wait_for_deployment_in_namespace "event-broker" "keptn" # Wait function also waits for eventbroker-ext
+wait_for_deployment_in_namespace "auth" "keptn"
+wait_for_deployment_in_namespace "control" "keptn"

@@ -8,53 +8,54 @@ source ./utils.sh
 
 print_info "Starting installation of keptn"
 
-if [[ -z "${KEPTN_INSTALL_ENV}" ]]; then
-  # Variables for gcloud
-  if [[ -z "${CLUSTER_NAME}" ]]; then
-    print_debug "CLUSTER_NAME is not set, take it from creds.json"
-    CLUSTER_NAME=$(cat creds.json | jq -r '.clusterName')
-    verify_variable "$CLUSTER_NAME" "CLUSTER_NAME is not defined in environment variable nor in creds.json file." 
-  fi
+# if [[ -z "${KEPTN_INSTALL_ENV}" ]]; then
+#   # Variables for gcloud
+#   if [[ -z "${CLUSTER_NAME}" ]]; then
+#     print_debug "CLUSTER_NAME is not set, take it from creds.json"
+#     CLUSTER_NAME=$(cat creds.json | jq -r '.clusterName')
+#     verify_variable "$CLUSTER_NAME" "CLUSTER_NAME is not defined in environment variable nor in creds.json file." 
+#   fi
 
-  if [[ -z "${CLUSTER_ZONE}" ]]; then
-    print_debug "CLUSTER_ZONE is not set, take it from creds.json"
-    CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
-    verify_variable "$CLUSTER_ZONE" "CLUSTER_NAME is not defined in environment variable nor in creds.json file." 
-  fi
+#   if [[ -z "${CLUSTER_ZONE}" ]]; then
+#     print_debug "CLUSTER_ZONE is not set, take it from creds.json"
+#     CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
+#     verify_variable "$CLUSTER_ZONE" "CLUSTER_NAME is not defined in environment variable nor in creds.json file." 
+#   fi
 
-  # Test connection to cluster
-  print_info "Test connection to cluster"
-  ./testConnection.sh $CLUSTER_NAME $CLUSTER_ZONE
-  # verify_install_step $? "Could not connect to cluster. Please check the values for your Cluster Name, GKE Project, and Cluster Zone during the credentials setup."
-  print_info "Connection to cluster successful"
-fi
+#   # Test connection to cluster
+#   print_info "Test connection to cluster"
+#   ./testConnection.sh $CLUSTER_NAME $CLUSTER_ZONE
+#   # verify_install_step $? "Could not connect to cluster. Please check the values for your Cluster Name, GKE Project, and Cluster Zone during the credentials setup."
+#   print_info "Connection to cluster successful"
+# fi
 
 # Variables for installing Istio and Knative
-if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
-  print_debug "CLUSTER_IPV4_CIDR is not set, retrieve it using gcloud."
-  CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
-  if [[ $? != 0 ]]; then
-    print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${CLUSTER_IPV4_CIDR} property." && exit 1
-  fi
-  verify_variable "$CLUSTER_IPV4_CIDR" "CLUSTER_IPV4_CIDR is not defined in environment variable nor could it be retrieved using gcloud." 
-fi
+# if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
+#   print_debug "CLUSTER_IPV4_CIDR is not set, retrieve it using gcloud."
+#   CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
+#   if [[ $? != 0 ]]; then
+#     print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${CLUSTER_IPV4_CIDR} property." && exit 1
+#   fi
+#   verify_variable "$CLUSTER_IPV4_CIDR" "CLUSTER_IPV4_CIDR is not defined in environment variable nor could it be retrieved using gcloud." 
+# fi
 
-if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
-  print_debug "SERVICES_IPV4_CIDR is not set, retrieve it using gcloud."
-  SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
-  if [[ $? != 0 ]]; then
-    print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${SERVICES_IPV4_CIDR} property." && exit 1
-  fi
-  verify_variable "$SERVICES_IPV4_CIDR" "SERVICES_IPV4_CIDR is not defined in environment variable nor could it be retrieved using gcloud." 
-fi
+# if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
+#   print_debug "SERVICES_IPV4_CIDR is not set, retrieve it using gcloud."
+#   SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
+#   if [[ $? != 0 ]]; then
+#     print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${SERVICES_IPV4_CIDR} property." && exit 1
+#   fi
+#   verify_variable "$SERVICES_IPV4_CIDR" "SERVICES_IPV4_CIDR is not defined in environment variable nor could it be retrieved using gcloud." 
+# fi
 
 # Variables for creating cluster role binding
 if [[ -z "${GCLOUD_USER}" ]]; then
-  print_debug "GCLOUD_USER is not set, retrieve it using gcloud."
-  GCLOUD_USER=$(gcloud config get-value account)
-  if [[ $? != 0 ]]; then
-    print_error "gloud failed to get account values." && exit 1
-  fi
+  print_debug "GCLOUD_USER is not set, retrieve it from creds.json."
+  GCLOUD_USER=$(cat creds.json | jq -r '.gclouduser')
+  #GCLOUD_USER=$(gcloud config get-value account)
+  #if [[ $? != 0 ]]; then
+  #  print_error "gloud failed to get account values." && exit 1
+  #fi
   verify_variable "$GCLOUD_USER" "GCLOUD_USER is not defined in environment variable nor could it be retrieved using gcloud." 
 fi
 
@@ -74,13 +75,13 @@ verify_kubectl $? "Creating keptn namespace failed."
 
 # Install Istio service mesh
 print_info "Installing Istio"
-./setupIstio.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
+./setupIstio.sh
 verify_install_step $? "Installing Istio failed."
 print_info "Installing Istio done"
 
 # Install knative core components
 print_info "Installing Knative"
-./setupKnative.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
+./setupKnative.sh
 verify_install_step $? "Installing Knative failed."
 print_info "Installing Knative done"
 
