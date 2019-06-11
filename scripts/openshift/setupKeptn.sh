@@ -81,3 +81,6 @@ wait_for_all_pods_in_namespace "keptn"
 wait_for_deployment_in_namespace "event-broker" "keptn" # Wait function also waits for eventbroker-ext
 wait_for_deployment_in_namespace "auth" "keptn"
 wait_for_deployment_in_namespace "control" "keptn"
+
+CONTROL_SERVICE_ID=$(kubectl get ksvc -n keptn control -oyaml | yq r - status.latestReadyRevisionName)
+oc expose svc $CONTROL_SERVICE_ID-service  --name=control -n keptn
