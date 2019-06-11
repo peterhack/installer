@@ -2,6 +2,7 @@
 
 source ./utils.sh
 
+# Create Istio namespace
 kubectl apply -f ../manifests/istio/istio-namespace.yaml
 verify_kubectl $? "Creating istio namespace failed."
 
@@ -25,7 +26,7 @@ wait_for_crds "virtualservices,destinationrules,serviceentries,gateways,envoyfil
 kubectl apply -f ../manifests/istio/istio-lean.yaml
 verify_kubectl $? "Creating all istio components failed."
 
-# Apply Istio lean
+# Apply Istio local gateway
 kubectl apply -f ../manifests/istio/istio-local-gateway.yaml
 verify_kubectl $? "Creating all istio local gateway failed."
 
