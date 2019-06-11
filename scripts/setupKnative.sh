@@ -1,4 +1,7 @@
 #!/bin/bash
+CLUSTER_IPV4_CIDR=$1
+SERVICES_IPV4_CIDR=$2
+
 source ./utils.sh
 
 # Needed for pull request Travis Build - will be removed
@@ -42,11 +45,11 @@ do
 done
 
 # Creating cluster role binding for knative
-#kubectl apply -f https://raw.githubusercontent.com/knative/serving/v0.4.0/third_party/config/build/clusterrole.yaml
-#verify_kubectl $? "Creating cluster role for knative failed."
+kubectl apply -f https://raw.githubusercontent.com/knative/serving/v0.4.0/third_party/config/build/clusterrole.yaml
+verify_kubectl $? "Creating cluster role for knative failed."
 
-#kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR" | kubectl apply -f - 
-#verify_kubectl $? "Updating configmap config-network in knative-serving namespace failed."
+kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR" | kubectl apply -f - 
+verify_kubectl $? "Updating configmap config-network in knative-serving namespace failed."
 
 # Create build-bot service account
 #kubectl apply -f ../manifests/knative/build/service-account.yaml
