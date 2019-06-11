@@ -39,8 +39,12 @@ if [[ -z "${GITHUB_ORGANIZATION}" ]]; then
 fi
 
 # Deploy uniform
-kubectl apply -f ../manifests/keptn/uniform.yaml
-verify_kubectl $? "Deploying keptn's uniform failed."
+kubectl apply -f ../manifests/keptn/uniform-services.yaml
+verify_kubectl $? "Deploying keptn's uniform-services failed."
+
+kubectl apply -f ../manifests/keptn/uniform-subscriptions.yaml
+verify_kubectl $? "Deploying keptn's uniform-subscriptions failed."
+
 
 # Clean-up working directory
 rm -rf keptn-services
