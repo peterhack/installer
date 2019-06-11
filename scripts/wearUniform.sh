@@ -55,7 +55,7 @@ chmod +x deploy.sh
 verify_install_step $? "Deploying jenkins-service failed."
 cd ..
 
-git clone --branch 0.2.0 https://github.com/keptn/github-service.git --single-branch
+git clone --branch 0.2.1 https://github.com/keptn/github-service.git --single-branch
 cd github-service
 chmod +x deploy.sh
 ./deploy.sh
