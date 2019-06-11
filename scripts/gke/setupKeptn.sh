@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./utils.sh
+source ./../common/utils.sh
 
 # Domain used for routing to keptn services
 DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].hostname)

@@ -38,8 +38,6 @@ if [[ -z "${GITHUB_ORGANIZATION}" ]]; then
   verify_variable "$GITHUB_ORGANIZATION" "GITHUB_USER_EMAIL is not defined in environment variable nor in creds.json file." 
 fi
 
-source ./utils.sh
-
 # Configure knative serving default domain
 rm -f ../manifests/gen/config-domain.yaml
 

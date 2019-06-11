@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./utils.sh
+source ./../common/utils.sh
 
 kubectl create namespace keptn
 # Domain used for routing to keptn services

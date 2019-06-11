@@ -4,7 +4,7 @@ LOG_LOCATION=./logs
 exec > >(tee -i $LOG_LOCATION/installKeptn.log)
 exec 2>&1
 
-source ./utils.sh
+source ./common/utils.sh
 
 case $PLATFORM in
   aks)

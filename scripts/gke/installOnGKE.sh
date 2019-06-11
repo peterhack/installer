@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./utils.sh
+source ./../common/utils.sh
 
 print_info "Starting installation of keptn"
 

@@ -2,7 +2,7 @@
 CLUSTER_IPV4_CIDR=$1
 SERVICES_IPV4_CIDR=$2
 
-source ./utils.sh
+source ./common/utils.sh
 
 # Needed for pull request Travis Build - will be removed
 kubectl create namespace keptn #2> /dev/null
