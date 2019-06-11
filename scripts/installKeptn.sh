@@ -24,8 +24,8 @@ case $PLATFORM in
     ./openshift/installOnOpenshift.sh
     ;;
   gke)
-    ./installOnGKE.sh
+    ./gke/installOnGKE.sh
   *)
-    ./installOnGKE.sh     
+    ./gke/installOnGKE.sh     
     ;;
 esac
