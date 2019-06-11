@@ -8,26 +8,26 @@ source ./utils.sh
 
 print_info "Starting installation of keptn"
 
-if [[ -z "${KEPTN_INSTALL_ENV}" ]]; then
-  # Variables for gcloud
-  if [[ -z "${CLUSTER_NAME}" ]]; then
-    print_debug "CLUSTER_NAME is not set, take it from creds.json"
-    CLUSTER_NAME=$(cat creds.json | jq -r '.clusterName')
-    verify_variable "$CLUSTER_NAME" "CLUSTER_NAME is not defined in environment variable nor in creds.json file." 
-  fi
+# if [[ -z "${KEPTN_INSTALL_ENV}" ]]; then
+#   # Variables for gcloud
+#   if [[ -z "${CLUSTER_NAME}" ]]; then
+#     print_debug "CLUSTER_NAME is not set, take it from creds.json"
+#     CLUSTER_NAME=$(cat creds.json | jq -r '.clusterName')
+#     verify_variable "$CLUSTER_NAME" "CLUSTER_NAME is not defined in environment variable nor in creds.json file." 
+#   fi
 
-  if [[ -z "${CLUSTER_ZONE}" ]]; then
-    print_debug "CLUSTER_ZONE is not set, take it from creds.json"
-    CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
-    verify_variable "$CLUSTER_ZONE" "CLUSTER_NAME is not defined in environment variable nor in creds.json file." 
-  fi
+#   if [[ -z "${CLUSTER_ZONE}" ]]; then
+#     print_debug "CLUSTER_ZONE is not set, take it from creds.json"
+#     CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterZone')
+#     verify_variable "$CLUSTER_ZONE" "CLUSTER_NAME is not defined in environment variable nor in creds.json file." 
+#   fi
 
-  # Test connection to cluster
-  print_info "Test connection to cluster"
-  ./testConnection.sh $CLUSTER_NAME $CLUSTER_ZONE
-  # verify_install_step $? "Could not connect to cluster. Please check the values for your Cluster Name, GKE Project, and Cluster Zone during the credentials setup."
-  print_info "Connection to cluster successful"
-fi
+#   # Test connection to cluster
+#   print_info "Test connection to cluster"
+#   ./testConnection.sh $CLUSTER_NAME $CLUSTER_ZONE
+#   # verify_install_step $? "Could not connect to cluster. Please check the values for your Cluster Name, GKE Project, and Cluster Zone during the credentials setup."
+#   print_info "Connection to cluster successful"
+# fi
 
 # Variables for installing Istio and Knative
 if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
@@ -70,7 +70,7 @@ if [[ -z "${GCLOUD_USER}" ]]; then
   if [[ -z "${GCLOUD_USER}" ]]; then
     print_debug "GCLOUD_USER is not set, retrieve it from gcloud."
     GCLOUD_USER=$(gcloud config get-value account)
-    
+
     if [[ $? != 0 ]]; then
       print_error "gloud failed to get account values." && exit 1
     fi
@@ -79,6 +79,10 @@ if [[ -z "${GCLOUD_USER}" ]]; then
   verify_variable "$GCLOUD_USER" "GCLOUD_USER is not defined in environment variable nor could it be retrieved using gcloud." 
 fi
 
+echo $GCLOUD_USER
+echo $CLUSTER_IPV4_CIDR
+echo $SERVICES_IPV4_CIDR
+
 # Test kubectl get namespaces
 print_info "Testing connection to Kubernetes API"
 kubectl get namespaces
@@ -86,7 +90,7 @@ verify_kubectl $? "Could not connect to Kubernetes API."
 print_info "Connection to Kubernetes API successful"
 
 # Grant cluster admin rights to gcloud user
-kubectl create clusterrolebinding keptn-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
+#kubectl create clusterrolebinding keptn-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
 verify_kubectl $? "Cluster role binding could not be created."
 
 # Create keptn namespaces
