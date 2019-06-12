@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./../common/utils.sh
+source ./common/utils.sh
 
 kubectl create namespace keptn
 # Domain used for routing to keptn services
@@ -7,6 +7,12 @@ DOMAIN=$(oc get route -n istio-system istio-ingressgateway -oyaml | yq r - spec.
 if [[ $? != 0 ]]; then
   print_error "Failed to get ingress gateway information." && exit 1
 fi
+
+# Allow outbound traffic
+CLUSTER_IPV4_CIDR=172.30.0.0/16
+SERVICES_IPV4_CIDR=10.1.0.0/16
+# kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "172.29.0.0/16" | kubectl apply -f - 
+kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR" | kubectl apply -f - 
 
 # Set up SSL
 openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$DOMAIN"

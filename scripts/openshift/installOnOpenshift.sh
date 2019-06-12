@@ -4,10 +4,10 @@ LOG_LOCATION=./logs
 exec > >(tee -i $LOG_LOCATION/installKeptn.log)
 exec 2>&1
 
-source ./installationFunctions.sh
-source ./../common/utils.sh
+source ./openshift/installationFunctions.sh
+source ./common/utils.sh
 
-enable_admission_webhooks
+#enable_admission_webhooks
 install_olm
 install_catalogsources
 install_istio
@@ -44,7 +44,7 @@ print_info "Keptn wears uniform"
 print_info "Installation of keptn complete."
 
 # Retrieve keptn endpoint and api-token
-KEPTN_ENDPOINT=https://$(oc get route -n keptn control -oyaml | yq r - spec.host)
+KEPTN_ENDPOINT=http://$(oc get route -n keptn control -oyaml | yq r - spec.host)
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode)
 
 print_info "keptn endpoint: $KEPTN_ENDPOINT"
