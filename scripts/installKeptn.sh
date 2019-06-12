@@ -25,6 +25,10 @@ case $PLATFORM in
     ;;
   gke)
     ./gke/installOnGKE.sh
+    ;;
+  pks) # Pivotal Container Service (PKS) on GCP has the same install process like GKE (for now)
+    ./gke/installOnGKE.sh
+    ;;
   *)
     ./gke/installOnGKE.sh     
     ;;
