@@ -1,9 +1,5 @@
 #!/bin/bash
 
-LOG_LOCATION=./logs
-exec > >(tee -i $LOG_LOCATION/installKeptn.log)
-exec 2>&1
-
 source ./openshift/installationFunctions.sh
 source ./common/utils.sh
 

@@ -4,14 +4,30 @@ LOG_LOCATION=./logs
 exec > >(tee -i $LOG_LOCATION/installKeptn.log)
 exec 2>&1
 
-if [[ -z "${PLATFORM}" ]]; then
-  ./gke/installOnGKE.sh
-fi
-
-if [ "$PLATFORM" == "gke" ]; then
-  ./gke/installOnGKE.sh
-fi
-
-if [ "$PLATFORM" == "ocp" ]; then
-  ./openshift/installOnOpenshift.sh
-fi
+case $PLATFORM in
+  aks)
+    kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/istio-crds.yaml
+    verify_kubectl $? "Error applying Istio Credentials"
+    kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/istio.yaml
+    verify_kubectl $? "Error applying Istio"
+    kubectl label namespace default istio-injection=enabled --overwrite=true
+    verify_kubectl $? "Error setting istio-injection flag "
+    wait_for_all_pods_in_namespace "istio-system"
+    ;;
+  eks)
+    echo "$PLATFORM NOT SUPPORTED"
+    exit 1
+    ;;
+  ocp)
+    bash ./openshift/installOnOpenshift.sh
+    ;;
+  gke)
+    ./gke/installOnGKE.sh
+    ;;
+  pks) # Pivotal Container Service (PKS) on GCP has the same install process like GKE (for now)
+    ./gke/installOnGKE.sh
+    ;;
+  *)
+    ./gke/installOnGKE.sh     
+    ;;
+esac
