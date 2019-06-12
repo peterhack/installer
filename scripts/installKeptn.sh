@@ -31,30 +31,51 @@ fi
 
 # Variables for installing Istio and Knative
 if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
-  print_debug "CLUSTER_IPV4_CIDR is not set, retrieve it using gcloud."
-  CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
-  if [[ $? != 0 ]]; then
-    print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${CLUSTER_IPV4_CIDR} property." && exit 1
+  print_debug "CLUSTER_IPV4_CIDR is not set, retrieve it from creds.json."
+  CLUSTER_IPV4_CIDR=$(cat creds.json | jq -r '.clusteripv4cidr')
+
+  if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
+    print_debug "CLUSTER_IPV4_CIDR is not set, retrieve it from gcloud."
+    CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
+
+    if [[ $? != 0 ]]; then
+      print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${CLUSTER_IPV4_CIDR} property." && exit 1
+    fi
   fi
+
   verify_variable "$CLUSTER_IPV4_CIDR" "CLUSTER_IPV4_CIDR is not defined in environment variable nor could it be retrieved using gcloud." 
 fi
 
 if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
-  print_debug "SERVICES_IPV4_CIDR is not set, retrieve it using gcloud."
-  SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
-  if [[ $? != 0 ]]; then
-    print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${SERVICES_IPV4_CIDR} property." && exit 1
+  print_debug "SERVICES_IPV4_CIDR is not set, retrieve it from creds.json."
+  SERVICES_IPV4_CIDR=$(cat creds.json | jq -r '.serveripv4cidr')
+
+  if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
+    print_debug "SERVICES_IPV4_CIDR is not set, retrieve it from gcloud."
+    SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - serveripv4cidr)
+    
+    if [[ $? != 0 ]]; then
+      print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${SERVICES_IPV4_CIDR} property." && exit 1
+    fi
   fi
+
   verify_variable "$SERVICES_IPV4_CIDR" "SERVICES_IPV4_CIDR is not defined in environment variable nor could it be retrieved using gcloud." 
 fi
 
 # Variables for creating cluster role binding
 if [[ -z "${GCLOUD_USER}" ]]; then
-  print_debug "GCLOUD_USER is not set, retrieve it using gcloud."
-  GCLOUD_USER=$(gcloud config get-value account)
-  if [[ $? != 0 ]]; then
-    print_error "gloud failed to get account values." && exit 1
+  print_debug "GCLOUD_USER is not set, retrieve it from creds.json."
+  GCLOUD_USER=$(cat creds.json | jq -r '.gclouduser')
+
+  if [[ -z "${GCLOUD_USER}" ]]; then
+    print_debug "GCLOUD_USER is not set, retrieve it from gcloud."
+    GCLOUD_USER=$(gcloud config get-value account)
+
+    if [[ $? != 0 ]]; then
+      print_error "gloud failed to get account values." && exit 1
+    fi
   fi
+
   verify_variable "$GCLOUD_USER" "GCLOUD_USER is not defined in environment variable nor could it be retrieved using gcloud." 
 fi
 
@@ -105,6 +126,3 @@ KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r d
 
 print_info "keptn endpoint: $KEPTN_ENDPOINT"
 print_info "keptn api-token: $KEPTN_API_TOKEN"
-
-#print_info "To retrieve the keptn API token, please execute the following command:"
-#print_info "kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode"

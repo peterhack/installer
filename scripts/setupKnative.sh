@@ -16,11 +16,11 @@ do
   wait_for_crds "clusteringresses,configurations,images,podautoscalers,revisions,routes,services"
   wait_for_all_pods_in_namespace "knative-serving"
 
-  kubectl apply -f https://github.com/knative/build/releases/download/v0.4.0/build.yaml
-  verify_kubectl $? "Applying knative building components failed."
-  sleep 5
-  wait_for_crds "builds,buildtemplates,clusterbuildtemplates,images"
-  wait_for_all_pods_in_namespace "knative-build"
+  #kubectl apply -f https://github.com/knative/build/releases/download/v0.4.0/build.yaml
+  #verify_kubectl $? "Applying knative building components failed."
+  #sleep 5
+  #wait_for_crds "builds,buildtemplates,clusterbuildtemplates,images"
+  #wait_for_all_pods_in_namespace "knative-build"
 
   kubectl apply -f https://github.com/knative/eventing/releases/download/v0.4.0/release.yaml
   ## KNOWN ISSUE: Race condition regarding custom resource defintion ClusterChannelProvisioner when applying release.yaml - https://github.com/knative/eventing/issues/680
@@ -52,12 +52,12 @@ kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['i
 verify_kubectl $? "Updating configmap config-network in knative-serving namespace failed."
 
 # Create build-bot service account
-kubectl apply -f ../manifests/knative/build/service-account.yaml
-verify_kubectl $? "Creating service account for build bot in keptn namespace failed."
+#kubectl apply -f ../manifests/knative/build/service-account.yaml
+#verify_kubectl $? "Creating service account for build bot in keptn namespace failed."
 
 # Install kaniko build template
-kubectl apply -f ../manifests/knative/build/kaniko.yaml -n keptn
-verify_kubectl $? "Creating the kaniko build template failed."
+#kubectl apply -f ../manifests/knative/build/kaniko.yaml -n keptn
+#verify_kubectl $? "Creating the kaniko build template failed."
 
 ##############################################
 ## Start validation of Knative installation ##
