@@ -7,26 +7,27 @@ exec 2>&1
 source ./openshift/installationFunctions.sh
 source ./common/utils.sh
 
-#enable_admission_webhooks
 install_olm
 install_catalogsources
 install_istio
+
+wait_for_all_pods_in_namespace "istio-system"
 install_knative serving
 install_knative eventing
 oc adm policy add-cluster-role-to-user cluster-admin -z knative-eventing-operator -n knative-eventing
 oc adm policy add-scc-to-user privileged -z elasticsearch-logging -n knative-monitoring
 
 kubectl apply -f https://github.com/knative/serving/releases/download/v0.4.0/monitoring.yaml
-verify_kubectl $? "Applying knative monitoring components failed."
+#verify_kubectl $? "Applying knative monitoring components failed."
 sleep 5
-wait_for_all_pods_in_namespace "knative-monitoring"
+#wait_for_all_pods_in_namespace "knative-monitoring"
 
 
-wait_for_deployment knative-serving controller
-wait_for_all_pods knative-serving
-wait_for_deployment knative-eventing eventing-controller
-wait_for_deployment knative-eventing in-memory-channel-controller
-wait_for_deployment knative-eventing in-memory-channel-dispatcher
+wait_for_deployment_in_namespace "controller" "knative-serving"
+wait_for_all_pods_in_namespace "knative-serving"
+wait_for_deployment_in_namespace "eventing-controller" "knative-eventing"
+wait_for_deployment_in_namespace "in-memory-channel-controller" "knative-eventing"
+wait_for_deployment_in_namespace "in-memory-channel-dispatcher" "knative-eventing"
 
 # Install keptn core services - Install keptn channels
 print_info "Installing keptn"
@@ -36,7 +37,7 @@ print_info "Installing keptn done"
 
 # Install keptn services
 print_info "Wear uniform"
-./../wearUniform.sh
+./common/wearUniform.sh
 verify_install_step $? "Installing keptn's uniform failed."
 print_info "Keptn wears uniform"
 

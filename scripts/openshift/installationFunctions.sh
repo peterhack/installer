@@ -77,53 +77,6 @@ function check_operatorgroups {
   $CMD get crd operatorgroups.operators.coreos.com >/dev/null 2>&1
 }
 
-function enable_admission_webhooks {
-  if check_openshift_4; then
-    echo "Detected OpenShift 4 - skipping enabling admission webhooks"
-  else
-    echo "Attempting to enable admission webhooks via SSH."
-
-    ssh master.openshift.local /bin/bash <<- EOF
-	sudo -i
-	cp -n /etc/origin/master/master-config.yaml /etc/origin/master/master-config.yaml.backup
-	oc ex config patch /etc/origin/master/master-config.yaml --type=merge -p '{
-	  "admissionConfig": {
-	    "pluginConfig": {
-	      "ValidatingAdmissionWebhook": {
-	        "configuration": {
-	          "apiVersion": "apiserver.config.k8s.io/v1alpha1",
-	          "kind": "WebhookAdmission",
-	          "kubeConfigFile": "/dev/null"
-	        }
-	      },
-	      "MutatingAdmissionWebhook": {
-	        "configuration": {
-	          "apiVersion": "apiserver.config.k8s.io/v1alpha1",
-	          "kind": "WebhookAdmission",
-	          "kubeConfigFile": "/dev/null"
-	        }
-	      }
-	    }
-	  }
-	}' >/etc/origin/master/master-config.yaml.patched
-	if [ $? == 0 ]; then
-	  mv /etc/origin/master/master-config.yaml.patched /etc/origin/master/master-config.yaml
-	  /usr/local/bin/master-restart api && /usr/local/bin/master-restart controllers
-	else
-	  exit
-	fi
-	EOF
-
-    if [ $? == 0 ]; then
-      # wait until the kube-apiserver is restarted
-      until oc status 2>/dev/null; do sleep 5; done
-    else
-      echo 'Remote command failed; check $KUBE_SSH_USER and/or $KUBE_SSH_KEY'
-      return -1
-    fi
-  fi
-}
-
 function install_olm {
   if check_openshift_4; then
     echo "Detected OpenShift 4 - skipping OLM installation."
@@ -268,23 +221,6 @@ function install_knative {
 	  startingCSV: ${COMPONENT}-operator.${version}
 	  channel: alpha
 	EOF
-}
-
-function enable_interaction_with_registry() {
-  if check_openshift_4; then
-    local ns=${1:-knative-serving}
-    local configmap_name=config-service-ca
-    local cert_name=service-ca.crt
-    local mount_path=/var/run/secrets/kubernetes.io/servicecerts
-
-    $CMD -n $ns create configmap $configmap_name
-    $CMD -n $ns annotate configmap $configmap_name service.alpha.openshift.io/inject-cabundle="true"
-    timeout 180 '$CMD -n $ns get cm $configmap_name -oyaml | grep $cert_name'
-    $CMD -n $ns set volume deployment/controller --add --name=service-ca --configmap-name=$configmap_name --mount-path=$mount_path
-    $CMD -n $ns set env deployment/controller SSL_CERT_FILE=$mount_path/$cert_name
-  else
-    echo "Registry configuration only required for OCP4"
-  fi
 }
 
 function patch_istio_for_knative() {

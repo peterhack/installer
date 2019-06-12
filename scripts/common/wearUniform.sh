@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./utils.sh
+source ./common/utils.sh
 
 # Environment variables for jenkins-service
 if [[ -z "${JENKINS_USER}" ]]; then
@@ -41,7 +41,7 @@ fi
 # Deploy uniform
 kubectl apply -f ../manifests/keptn/uniform-services.yaml
 verify_kubectl $? "Deploying keptn's uniform-services failed."
-
+sleep 20
 kubectl apply -f ../manifests/keptn/uniform-subscriptions.yaml
 verify_kubectl $? "Deploying keptn's uniform-subscriptions failed."
 
@@ -52,13 +52,13 @@ mkdir keptn-services
 cd keptn-services
 
 # Install jenkins-service
-git clone --branch develop https://github.com/keptn/jenkins-service.git --single-branch
-cd jenkins-service
-chmod +x deploy.sh
-./deploy.sh "" $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_NAME $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN
-verify_install_step $? "Deploying jenkins-service failed."
+#git clone --branch develop https://github.com/keptn/jenkins-service.git --single-branch
+#cd jenkins-service
+#chmod +x deploy.sh
+#./deploy.sh "" $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_NAME $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN
+#verify_install_step $? "Deploying jenkins-service failed."
 
-cd ../..
+#cd ../..
 
 ##############################################
 ## Start validation of keptn's uniform      ##

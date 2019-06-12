@@ -88,5 +88,8 @@ wait_for_deployment_in_namespace "event-broker" "keptn" # Wait function also wai
 wait_for_deployment_in_namespace "auth" "keptn"
 wait_for_deployment_in_namespace "control" "keptn"
 
+helm init
+oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:kube-system:default
+
 CONTROL_SERVICE_ID=$(kubectl get ksvc -n keptn control -oyaml | yq r - status.latestReadyRevisionName)
 oc expose svc $CONTROL_SERVICE_ID-service  --name=control -n keptn
