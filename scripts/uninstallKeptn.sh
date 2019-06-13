@@ -26,5 +26,4 @@ kubectl delete -f ../manifests/tiller/tiller.yaml --ignore-not-found
 
 # Delete cluster role bindings
 kubectl delete clusterrolebinding keptn-cluster-admin-binding --ignore-not-found
-kubectl delete clusterrolebindings.rbac.authorization.k8s.io jenkins-rbac --ignore-not-found
 kubectl delete -f https://raw.githubusercontent.com/Dynatrace/dynatrace-oneagent-operator/master/deploy/kubernetes.yaml --ignore-not-found

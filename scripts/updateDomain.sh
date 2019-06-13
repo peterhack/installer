@@ -1,19 +1,6 @@
 #!/bin/sh
 source ./utils.sh 
 DOMAIN=$1
-
-if [[ -z "${JENKINS_USER}" ]]; then
-  print_debug "JENKINS_USER not set, take it from creds.json"
-  JENKINS_USER=$(cat creds.json | jq -r '.jenkinsUser')
-  verify_variable "$JENKINS_USER" "JENKINS_USER is not defined in environment variable nor in creds.json file." 
-fi
-
-if [[ -z "${JENKINS_PASSWORD}" ]]; then
-  print_debug "JENKINS_PASSWORD not set, take it from creds.json"
-  JENKINS_PASSWORD=$(cat creds.json | jq -r '.jenkinsPassword')
-  verify_variable "$JENKINS_PASSWORD" "JENKINS_PASSWORD is not defined in environment variable nor in creds.json file." 
-fi
-
 if [[ -z "${GITHUB_USER_NAME}" ]]; then
   print_debug "GITHUB_USER_NAME not set, take it from creds.json"
   GITHUB_USER_NAME=$(cat creds.json | jq -r '.githubUserName')
@@ -70,11 +57,6 @@ cat ../manifests/keptn/keptn-domain-configmap.yaml | \
 
 kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml
 verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
-
-git clone --branch develop https://github.com/keptn/jenkins-service.git --single-branch
-cd jenkins-service
-chmod +x deploy.sh
-./deploy.sh "" $JENKINS_USER $JENKINS_PASSWORD $GITHUB_USER_NAME $GITHUB_USER_EMAIL $GITHUB_ORGANIZATION $GITHUB_PERSONAL_ACCESS_TOKEN
 
 # re-deploy github service
 rm github-service.yaml
