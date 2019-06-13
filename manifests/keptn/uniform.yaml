@@ -17,6 +17,12 @@ spec:
         spec:
           container:
             image: keptn/github-service:latest
+            env:
+            - name: APP_DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: keptn-domain
+                  key: app_domain
 ---
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Subscription
