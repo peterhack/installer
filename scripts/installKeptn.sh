@@ -105,6 +105,12 @@ print_info "Installing Knative"
 verify_install_step $? "Installing Knative failed."
 print_info "Installing Knative done"
 
+# Install tiller for helm
+print_info "Installing Tiller"
+kubectl apply -f ../manifests/tiller/tiller.yaml
+helm init --service-account tiller
+print_info "Installing Tiller done"
+
 # Install keptn core services - Install keptn channels
 print_info "Installing keptn"
 ./setupKeptn.sh
