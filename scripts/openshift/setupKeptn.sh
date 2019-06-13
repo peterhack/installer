@@ -17,9 +17,9 @@ oc project istio-system
 
 BASE_URL=$(oc get route -n istio-system istio-ingressgateway -oyaml | yq r - spec.host | sed 's~istio-ingressgateway-istio-system.~~')
 
-oc create route edge istio-wildcard-ingress --service=istio-ingressgateway --hostname="www.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Redirect'
+oc create route edge istio-wildcard-ingress --service=istio-ingressgateway --hostname="www.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Allow'
 verify_kubectl $? "Creation of ingress route failed."
-oc create route edge istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Redirect'
+oc create route edge istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Allow'
 verify_kubectl $? "Creation of keptn ingress route failed."
 
 # Domain used for routing to keptn services
