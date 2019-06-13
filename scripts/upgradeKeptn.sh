@@ -92,7 +92,6 @@ print_debug "Removing old revision of $SERVICENAME service"
 kubectl delete revision $SERVICE_REVISION -n keptn
 rm $SERVICENAME-deployment.yaml
 
-
 SERVICENAME=github-service
 print_debug "Update $SERVICENAME service"
 SERVICE_REVISION=$(kubectl get revisions --namespace=keptn | grep $SERVICENAME | cut -d' ' -f1)
@@ -133,6 +132,11 @@ BRIDGE_RELEASE="release-0.1.0"
 kubectl delete -f https://raw.githubusercontent.com/keptn/bridge/$BRIDGE_RELEASE/config/bridge.yaml --ignore-not-found
 kubectl apply -f https://raw.githubusercontent.com/keptn/bridge/$BRIDGE_RELEASE/config/bridge.yaml
 verify_kubectl $? "Deploying keptn's bridge failed."
+
+# Remove subscriptions of Jenkins service
+kubectl delete subscription jenkins-configuration-changed-subscription -n keptn
+kubectl delete subscription jenkins-deployment-finished-subscription -n keptn
+kubectl delete subscription jenkins-evaluation-done-subscription -n keptn
 
 
 echo "Upgrade to keptn 0.2.2 done."
