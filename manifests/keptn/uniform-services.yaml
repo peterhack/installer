@@ -17,6 +17,12 @@ spec:
         spec:
           container:
             image: keptn/github-service:latest
+            env:
+            - name: APP_DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: keptn-domain
+                  key: app_domain
 ---
 # pitometer-service
 apiVersion: serving.knative.dev/v1alpha1
@@ -90,5 +96,25 @@ spec:
         spec:
           container:
             image: keptn/jmeter-service:latest
+            imagePullPolicy: Always
+---
+# gatekeeper-service
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: gatekeeper-service
+  namespace: keptn
+  labels:
+    serving.knative.dev/visibility: cluster-local
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: keptn/gatekeeper-service:latest
             imagePullPolicy: Always
 

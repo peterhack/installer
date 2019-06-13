@@ -41,7 +41,7 @@ print_info "Keptn wears uniform"
 print_info "Installation of keptn complete."
 
 # Retrieve keptn endpoint and api-token
-KEPTN_ENDPOINT=http://$(oc get route -n keptn control -oyaml | yq r - spec.host)
+KEPTN_ENDPOINT=https://$(kubectl get ksvc -n keptn control -o=yaml | yq r - status.domain)
 KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode)
 
 print_info "keptn endpoint: $KEPTN_ENDPOINT"

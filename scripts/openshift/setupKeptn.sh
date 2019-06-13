@@ -2,8 +2,28 @@
 source ./common/utils.sh
 
 kubectl create namespace keptn
+
+# allow wildcard domains
+oc project default
+oc adm router --replicas=0
+verify_kubectl $? "Scaling down router failed"
+oc set env dc/router ROUTER_ALLOW_WILDCARD_ROUTES=true
+verify_kubectl $? "Configuration of openshift router failed"
+oc scale dc/router --replicas=1
+verify_kubectl $? "Upscaling of router failed"
+
+# create wildcard route for istio ingress gateway
+oc project istio-system
+
+BASE_URL=$(oc get route -n istio-system istio-ingressgateway -oyaml | yq r - spec.host | sed 's~istio-ingressgateway-istio-system.~~')
+
+oc create route edge istio-wildcard-ingress --service=istio-ingressgateway --hostname="www.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Redirect'
+verify_kubectl $? "Creation of ingress route failed."
+oc create route edge istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Redirect'
+verify_kubectl $? "Creation of keptn ingress route failed."
+
 # Domain used for routing to keptn services
-DOMAIN=$(oc get route -n istio-system istio-ingressgateway -oyaml | yq r - spec.host)
+DOMAIN=$(oc get route -n istio-system istio-wildcard-ingress -oyaml | yq r - spec.host)
 if [[ $? != 0 ]]; then
   print_error "Failed to get ingress gateway information." && exit 1
 fi
@@ -90,6 +110,3 @@ wait_for_deployment_in_namespace "control" "keptn"
 
 helm init
 oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:kube-system:default
-
-CONTROL_SERVICE_ID=$(kubectl get ksvc -n keptn control -oyaml | yq r - status.latestReadyRevisionName)
-oc expose svc $CONTROL_SERVICE_ID-service  --name=control -n keptn
