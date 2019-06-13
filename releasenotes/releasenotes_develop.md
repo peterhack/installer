@@ -6,6 +6,7 @@
 - Deploy _jmeter-service_ as part of keptn's uniform [#389](https://github.com/keptn/keptn/issues/389)
 - Deploy _gatekeeper-service_ as part of keptn's uniform [#202](https://github.com/keptn/keptn/issues/202)
 - Removed deployment of internal container registry [#378](https://github.com/keptn/keptn/issues/378)
+- Removed Jenkins [#444](https://github.com/keptn/keptn/issues/444)
 
 ## Fixed Issues
 - Fixed typo: Changed _art**e**fact_ to _art**i**fact_ [#387](https://github.com/keptn/keptn/issues/387)
