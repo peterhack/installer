@@ -1,4 +1,7 @@
 #!/bin/bash
+CLUSTER_IPV4_CIDR=$1
+SERVICES_IPV4_CIDR=$2
+
 source ./common/utils.sh
 
 kubectl create namespace keptn

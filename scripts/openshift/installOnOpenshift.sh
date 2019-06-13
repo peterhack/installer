@@ -3,6 +3,18 @@
 source ./openshift/installationFunctions.sh
 source ./common/utils.sh
 
+if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
+  print_debug "CLUSTER_IPV4_CIDR is not set, take it from creds.json"
+  CLUSTER_ZONE=$(cat creds.json | jq -r '.clusterIpv4Cidr')
+  verify_variable "$CLUSTER_IPV4_CIDR" "CLUSTER_IPV4_CIDR is not defined in environment variable nor in creds.json file." 
+fi
+
+if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
+  print_debug "SERVICES_IPV4_CIDR is not set, take it from creds.json"
+  CLUSTER_ZONE=$(cat creds.json | jq -r '.servicesIpv4Cidr')
+  verify_variable "$SERVICES_IPV4_CIDR" "SERVICES_IPV4_CIDR is not defined in environment variable nor in creds.json file." 
+fi
+
 install_olm
 install_catalogsources
 install_istio
@@ -27,7 +39,7 @@ wait_for_deployment_in_namespace "in-memory-channel-dispatcher" "knative-eventin
 
 # Install keptn core services - Install keptn channels
 print_info "Installing keptn"
-./openshift/setupKeptn.sh
+./openshift/setupKeptn.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
 verify_install_step $? "Installing keptn failed."
 print_info "Installing keptn done"
 
