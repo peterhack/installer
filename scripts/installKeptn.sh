@@ -34,7 +34,7 @@ if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
   print_debug "CLUSTER_IPV4_CIDR is not set, retrieve it from creds.json."
   CLUSTER_IPV4_CIDR=$(cat creds.json | jq -r '.clusteripv4cidr')
 
-  if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
+  if [[ "${CLUSTER_IPV4_CIDR}" -eq "null" ]]; then
     print_debug "CLUSTER_IPV4_CIDR is not set, retrieve it from gcloud."
     CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
 
@@ -50,10 +50,10 @@ if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
   print_debug "SERVICES_IPV4_CIDR is not set, retrieve it from creds.json."
   SERVICES_IPV4_CIDR=$(cat creds.json | jq -r '.serveripv4cidr')
 
-  if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
+  if [[ "${SERVICES_IPV4_CIDR}" -eq "null" ]]; then
     print_debug "SERVICES_IPV4_CIDR is not set, retrieve it from gcloud."
-    SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - serveripv4cidr)
-    
+    SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
+
     if [[ $? != 0 ]]; then
       print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${SERVICES_IPV4_CIDR} property." && exit 1
     fi
@@ -67,7 +67,7 @@ if [[ -z "${GCLOUD_USER}" ]]; then
   print_debug "GCLOUD_USER is not set, retrieve it from creds.json."
   GCLOUD_USER=$(cat creds.json | jq -r '.gclouduser')
 
-  if [[ -z "${GCLOUD_USER}" ]]; then
+  if [[ "${GCLOUD_USER}" -eq "null" ]]; then
     print_debug "GCLOUD_USER is not set, retrieve it from gcloud."
     GCLOUD_USER=$(gcloud config get-value account)
 
@@ -79,6 +79,9 @@ if [[ -z "${GCLOUD_USER}" ]]; then
   verify_variable "$GCLOUD_USER" "GCLOUD_USER is not defined in environment variable nor could it be retrieved using gcloud." 
 fi
 
+
+
+
 # Test kubectl get namespaces
 print_info "Testing connection to Kubernetes API"
 kubectl get namespaces
@@ -86,7 +89,7 @@ verify_kubectl $? "Could not connect to Kubernetes API."
 print_info "Connection to Kubernetes API successful"
 
 # Grant cluster admin rights to gcloud user
-kubectl create clusterrolebinding keptn-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
+#kubectl create clusterrolebinding keptn-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
 verify_kubectl $? "Cluster role binding could not be created."
 
 # Create keptn namespaces
