@@ -31,32 +31,56 @@ fi
 
 # Variables for installing Istio and Knative
 if [[ -z "${CLUSTER_IPV4_CIDR}" ]]; then
-  print_debug "CLUSTER_IPV4_CIDR is not set, retrieve it using gcloud."
-  CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
-  if [[ $? != 0 ]]; then
-    print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${CLUSTER_IPV4_CIDR} property." && exit 1
+  print_debug "CLUSTER_IPV4_CIDR is not set, retrieve it from creds.json."
+  CLUSTER_IPV4_CIDR=$(cat creds.json | jq -r '.clusteripv4cidr')
+
+  if [[ "${CLUSTER_IPV4_CIDR}" -eq "null" ]]; then
+    print_debug "CLUSTER_IPV4_CIDR is not set, retrieve it from gcloud."
+    CLUSTER_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - clusterIpv4Cidr)
+
+    if [[ $? != 0 ]]; then
+      print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${CLUSTER_IPV4_CIDR} property." && exit 1
+    fi
   fi
+
   verify_variable "$CLUSTER_IPV4_CIDR" "CLUSTER_IPV4_CIDR is not defined in environment variable nor could it be retrieved using gcloud." 
 fi
 
 if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
-  print_debug "SERVICES_IPV4_CIDR is not set, retrieve it using gcloud."
-  SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
-  if [[ $? != 0 ]]; then
-    print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${SERVICES_IPV4_CIDR} property." && exit 1
+  print_debug "SERVICES_IPV4_CIDR is not set, retrieve it from creds.json."
+  SERVICES_IPV4_CIDR=$(cat creds.json | jq -r '.serveripv4cidr')
+
+  if [[ "${SERVICES_IPV4_CIDR}" -eq "null" ]]; then
+    print_debug "SERVICES_IPV4_CIDR is not set, retrieve it from gcloud."
+    SERVICES_IPV4_CIDR=$(gcloud container clusters describe ${CLUSTER_NAME} --zone=${CLUSTER_ZONE} | yq r - servicesIpv4Cidr)
+
+    if [[ $? != 0 ]]; then
+      print_error "gcloud failed to describe the ${CLUSTER_NAME} cluster for retrieving the ${SERVICES_IPV4_CIDR} property." && exit 1
+    fi
   fi
+
   verify_variable "$SERVICES_IPV4_CIDR" "SERVICES_IPV4_CIDR is not defined in environment variable nor could it be retrieved using gcloud." 
 fi
 
 # Variables for creating cluster role binding
 if [[ -z "${GCLOUD_USER}" ]]; then
-  print_debug "GCLOUD_USER is not set, retrieve it using gcloud."
-  GCLOUD_USER=$(gcloud config get-value account)
-  if [[ $? != 0 ]]; then
-    print_error "gloud failed to get account values." && exit 1
+  print_debug "GCLOUD_USER is not set, retrieve it from creds.json."
+  GCLOUD_USER=$(cat creds.json | jq -r '.gclouduser')
+
+  if [[ "${GCLOUD_USER}" -eq "null" ]]; then
+    print_debug "GCLOUD_USER is not set, retrieve it from gcloud."
+    GCLOUD_USER=$(gcloud config get-value account)
+
+    if [[ $? != 0 ]]; then
+      print_error "gloud failed to get account values." && exit 1
+    fi
   fi
+
   verify_variable "$GCLOUD_USER" "GCLOUD_USER is not defined in environment variable nor could it be retrieved using gcloud." 
 fi
+
+
+
 
 # Test kubectl get namespaces
 print_info "Testing connection to Kubernetes API"
@@ -65,7 +89,7 @@ verify_kubectl $? "Could not connect to Kubernetes API."
 print_info "Connection to Kubernetes API successful"
 
 # Grant cluster admin rights to gcloud user
-kubectl create clusterrolebinding keptn-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
+#kubectl create clusterrolebinding keptn-cluster-admin-binding --clusterrole=cluster-admin --user=$GCLOUD_USER
 verify_kubectl $? "Cluster role binding could not be created."
 
 # Create keptn namespaces
@@ -83,6 +107,12 @@ print_info "Installing Knative"
 ./setupKnative.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
 verify_install_step $? "Installing Knative failed."
 print_info "Installing Knative done"
+
+# Install tiller for helm
+print_info "Installing Tiller"
+kubectl apply -f ../manifests/tiller/tiller.yaml
+helm init --service-account tiller
+print_info "Installing Tiller done"
 
 # Install keptn core services - Install keptn channels
 print_info "Installing keptn"
@@ -105,6 +135,3 @@ KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r d
 
 print_info "keptn endpoint: $KEPTN_ENDPOINT"
 print_info "keptn api-token: $KEPTN_API_TOKEN"
-
-#print_info "To retrieve the keptn API token, please execute the following command:"
-#print_info "kubectl get secret keptn-api-token -n keptn -o=yaml | yq - r data.keptn-api-token | base64 --decode"

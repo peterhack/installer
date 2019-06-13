@@ -29,6 +29,8 @@ rm key.pem
 rm certificate.pem
 
 # Add config map in keptn namespace that contains the domain - this will be used by other services as well
+rm ../manifests/gen/keptn-domain-configmap.yaml
+
 cat ../manifests/keptn/keptn-domain-configmap.yaml | \
   sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' >> ../manifests/gen/keptn-domain-configmap.yaml
 
