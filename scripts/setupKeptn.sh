@@ -46,12 +46,6 @@ cat ../manifests/knative/config-domain.yaml | \
 kubectl apply -f ../manifests/gen/config-domain.yaml --wait
 verify_kubectl $? "Creating configmap config-domain in knative-serving namespace failed."
 
-# Add debug message
-echo "applied config-map"
-cat ../manifests/gen/config-domain.yaml
-echo "Get configmap config-domain"
-kubectl get cm config-domain -n knative-serving -oyaml
-
 # Creating cluster role binding
 kubectl apply -f ../manifests/keptn/rbac.yaml
 verify_kubectl $? "Creating cluster role for keptn failed."
