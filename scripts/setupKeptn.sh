@@ -34,7 +34,7 @@ rm ../manifests/gen/keptn-domain-configmap.yaml
 cat ../manifests/keptn/keptn-domain-configmap.yaml | \
   sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' >> ../manifests/gen/keptn-domain-configmap.yaml
 
-kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml
+kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml --wait
 verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
 
 # Configure knative serving default domain
@@ -43,7 +43,7 @@ rm -f ../manifests/gen/config-domain.yaml
 cat ../manifests/knative/config-domain.yaml | \
   sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' >> ../manifests/gen/config-domain.yaml
 
-kubectl apply -f ../manifests/gen/config-domain.yaml
+kubectl apply -f ../manifests/gen/config-domain.yaml --wait
 verify_kubectl $? "Creating configmap config-domain in knative-serving namespace failed."
 
 # Creating cluster role binding
@@ -80,7 +80,7 @@ rm -f ../manifests/keptn/gen/core.yaml
 cat ../manifests/keptn/core.yaml | \
   sed 's~CHANNEL_URI_PLACEHOLDER~'"$KEPTN_CHANNEL_URI"'~' >> ../manifests/keptn/gen/core.yaml
   
-kubectl apply -f ../manifests/keptn/gen/core.yaml
+kubectl apply -f ../manifests/keptn/gen/core.yaml --wait
 verify_kubectl $? "Deploying keptn core components failed."
 
 ##############################################
@@ -89,5 +89,6 @@ verify_kubectl $? "Deploying keptn core components failed."
 wait_for_all_pods_in_namespace "keptn"
 
 wait_for_deployment_in_namespace "event-broker" "keptn" # Wait function also waits for eventbroker-ext
-wait_for_deployment_in_namespace "auth" "keptn"
+wait_for_deployment_in_namespace "authenticator" "keptn"
 wait_for_deployment_in_namespace "control" "keptn"
+wait_for_deployment_in_namespace "bridge" "keptn"

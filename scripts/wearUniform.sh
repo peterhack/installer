@@ -2,7 +2,7 @@
 source ./utils.sh
 
 # Deploy uniform
-kubectl apply -f ../manifests/keptn/uniform.yaml
+kubectl apply -f ../manifests/keptn/uniform.yaml --wait
 verify_kubectl $? "Deploying keptn's uniform failed."
 
 ##############################################
