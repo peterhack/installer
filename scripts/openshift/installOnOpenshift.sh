@@ -25,6 +25,15 @@ install_knative eventing
 oc adm policy add-cluster-role-to-user cluster-admin -z knative-eventing-operator -n knative-eventing
 oc adm policy add-scc-to-user privileged -z elasticsearch-logging -n knative-monitoring
 
+
+# configure the host path volume plugin (needed for fluentd)
+kubectl create -f ../manifests/openshift/oc-scc-hostpath.yaml
+verify_kubectl $? "Deploying hostpath SCC failed."
+oc patch scc hostpath -p '{"allowHostDirVolumePlugin": true}'
+verify_install_step "Patching hostpath plugin failed."
+oc adm policy add-scc-to-group hostpath system:authenticated
+verify_install_step "Creating hostpath SCC failed."
+
 kubectl apply -f https://github.com/knative/serving/releases/download/v0.4.0/monitoring.yaml
 #verify_kubectl $? "Applying knative monitoring components failed."
 sleep 5
