@@ -17,7 +17,7 @@ spec:
         emptyDir: {}
       containers:
       - name: keptn-installer
-        image: keptn/installer:cfb210d
+        image: keptn/installer:c23a24c
         env: 
         - name: CLUSTER_IPV4_CIDR
           value: CLUSTER_IPV4_CIDR
