@@ -46,6 +46,12 @@ cat ../manifests/knative/config-domain.yaml | \
 kubectl apply -f ../manifests/gen/config-domain.yaml --wait
 verify_kubectl $? "Creating configmap config-domain in knative-serving namespace failed."
 
+# Add debug message
+echo "applied config-map"
+cat ../manifests/gen/config-domain.yaml
+echo "Get configmap config-domain"
+kubectl get cm config-domain -n knative-serving -oyaml
+
 # Creating cluster role binding
 kubectl apply -f ../manifests/keptn/rbac.yaml
 verify_kubectl $? "Creating cluster role for keptn failed."
@@ -89,5 +95,6 @@ verify_kubectl $? "Deploying keptn core components failed."
 wait_for_all_pods_in_namespace "keptn"
 
 wait_for_deployment_in_namespace "event-broker" "keptn" # Wait function also waits for eventbroker-ext
-wait_for_deployment_in_namespace "auth" "keptn"
+wait_for_deployment_in_namespace "authenticator" "keptn"
 wait_for_deployment_in_namespace "control" "keptn"
+wait_for_deployment_in_namespace "bridge" "keptn"
