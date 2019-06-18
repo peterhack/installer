@@ -74,6 +74,9 @@ print_info "Installing Knative"
 verify_install_step $? "Installing Knative failed."
 print_info "Installing Knative done"
 
+# Enable fluentd 
+kubectl label nodes --all beta.kubernetes.io/fluentd-ds-ready="true"
+
 # Install keptn core services - Install keptn channels
 print_info "Installing keptn"
 ./common/setupKeptn.sh
