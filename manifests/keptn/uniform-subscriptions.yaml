@@ -1,4 +1,29 @@
 ---
+# github-service
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: github-service
+  namespace: keptn
+  labels:
+    serving.knative.dev/visibility: cluster-local
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: keptn/github-service:latest
+            env:
+            - name: APP_DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: keptn-domain
+                  key: app_domain
+---
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Subscription
 metadata:
@@ -31,6 +56,22 @@ spec:
       kind: Service
       name: github-service
 ---
+# pitometer-service
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: pitometer-service
+  namespace: keptn
+  labels:
+    serving.knative.dev/visibility: cluster-local
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        spec:
+          container:
+            image: keptn/pitometer-service:latest
+---
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Subscription
 metadata:
@@ -46,6 +87,23 @@ spec:
       apiVersion: serving.knative.dev/v1alpha1
       kind: Service
       name: pitometer-service
+---
+# servicenow-service
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: servicenow-service
+  namespace: keptn
+  labels:
+    serving.knative.dev/visibility: cluster-local
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        spec:
+          container:
+            image: keptn/servicenow-service:latest
+            imagePullPolicy: Always
 ---
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Subscription
@@ -63,6 +121,26 @@ spec:
       kind: Service
       name: servicenow-service
 ---
+# helm-service
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: helm-service
+  namespace: keptn
+  labels:
+    serving.knative.dev/visibility: cluster-local
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: keptn/helm-service:latest
+            imagePullPolicy: Always
+---
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Subscription
 metadata:
@@ -79,6 +157,26 @@ spec:
       kind: Service
       name: helm-service
 ---
+# jmeter-service
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: jmeter-service
+  namespace: keptn
+  labels:
+    serving.knative.dev/visibility: cluster-local
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: keptn/jmeter-service:latest
+            imagePullPolicy: Always
+---
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Subscription
 metadata:
@@ -94,6 +192,26 @@ spec:
       apiVersion: serving.knative.dev/v1alpha1
       kind: Service
       name: jmeter-service
+---
+# gatekeeper-service
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: gatekeeper-service
+  namespace: keptn
+  labels:
+    serving.knative.dev/visibility: cluster-local
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: keptn/gatekeeper-service:latest
+            imagePullPolicy: Always
 ---
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Subscription
