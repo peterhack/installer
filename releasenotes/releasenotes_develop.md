@@ -8,6 +8,7 @@
 - Removed deployment of internal container registry [#378](https://github.com/keptn/keptn/issues/378)
 - Removed Jenkins [#444](https://github.com/keptn/keptn/issues/444)
 - Deploy _tiller_ as part of the core components [#434](https://github.com/keptn/keptn/issues/434)
+- Support installation on an AKS cluster [#3](https://github.com/keptn/keptn/issues/3)
 
 ## Fixed Issues
 - Fixed typo: Changed _art**e**fact_ to _art**i**fact_ [#387](https://github.com/keptn/keptn/issues/387)
