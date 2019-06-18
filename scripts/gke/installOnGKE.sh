@@ -20,7 +20,7 @@ if [[ -z "${KEPTN_INSTALL_ENV}" ]]; then
 
   # Test connection to cluster
   print_info "Test connection to cluster"
-  ./testConnection.sh $CLUSTER_NAME $CLUSTER_ZONE
+  ./gke/testConnection.sh $CLUSTER_NAME $CLUSTER_ZONE
   # verify_install_step $? "Could not connect to cluster. Please check the values for your Cluster Name, GKE Project, and Cluster Zone during the credentials setup."
   print_info "Connection to cluster successful"
 fi
