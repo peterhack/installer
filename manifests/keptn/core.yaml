@@ -29,6 +29,8 @@ kind: Service
 metadata:
   name: bridge
   namespace: keptn
+  labels:
+    serving.knative.dev/visibility: cluster-local
 spec:
   runLatest:
     configuration:
