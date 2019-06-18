@@ -77,6 +77,12 @@ print_info "Installing Knative done"
 # Enable fluentd 
 kubectl label nodes --all beta.kubernetes.io/fluentd-ds-ready="true"
 
+# Install tiller for helm
+print_info "Installing Tiller"
+kubectl apply -f ../manifests/tiller/tiller.yaml
+helm init --service-account tiller
+print_info "Installing Tiller done"
+
 # Install keptn core services - Install keptn channels
 print_info "Installing keptn"
 ./common/setupKeptn.sh
