@@ -70,25 +70,25 @@ verify_kubectl $? "Creating keptn namespace failed."
 
 # Install Istio service mesh
 print_info "Installing Istio"
-./setupIstio.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
+./common/setupIstio.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
 verify_install_step $? "Installing Istio failed."
 print_info "Installing Istio done"
 
 # Install knative core components
 print_info "Installing Knative"
-./setupKnative.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
+./common/setupKnative.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
 verify_install_step $? "Installing Knative failed."
 print_info "Installing Knative done"
 
 # Install keptn core services - Install keptn channels
 print_info "Installing keptn"
-./setupKeptn.sh
+./common/setupKeptn.sh
 verify_install_step $? "Installing keptn failed."
 print_info "Installing keptn done"
 
 # Install keptn services
 print_info "Wear uniform"
-./wearUniform.sh
+./common/wearUniform.sh
 verify_install_step $? "Installing keptn's uniform failed."
 print_info "Keptn wears uniform"
 
