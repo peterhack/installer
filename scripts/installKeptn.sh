@@ -14,7 +14,8 @@ case $PLATFORM in
     exit 1
     ;;
   openshift)
-    bash ./openshift/installOnOpenshift.sh
+    echo "$PLATFORM NOT SUPPORTED"
+    exit 1
     ;;
   gke)    
     ./gke/installOnGKE.sh
