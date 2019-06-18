@@ -6,13 +6,8 @@ exec 2>&1
 
 case $PLATFORM in
   aks)
-    kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/istio-crds.yaml
-    verify_kubectl $? "Error applying Istio Credentials"
-    kubectl apply --filename https://github.com/knative/serving/releases/download/v0.4.0/istio.yaml
-    verify_kubectl $? "Error applying Istio"
-    kubectl label namespace default istio-injection=enabled --overwrite=true
-    verify_kubectl $? "Error setting istio-injection flag "
-    wait_for_all_pods_in_namespace "istio-system"
+    echo "Install on AKS"
+    ./aks/installOnAKS.sh
     ;;
   eks)
     echo "$PLATFORM NOT SUPPORTED"
@@ -21,7 +16,7 @@ case $PLATFORM in
   openshift)
     bash ./openshift/installOnOpenshift.sh
     ;;
-  gke)
+  gke)    
     ./gke/installOnGKE.sh
     ;;
   pks) # Pivotal Container Service (PKS) on GCP has the same install process like GKE (for now)
