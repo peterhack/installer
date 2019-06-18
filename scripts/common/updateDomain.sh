@@ -1,5 +1,5 @@
 #!/bin/sh
-source ./utils.sh 
+source ./common/utils.sh 
 DOMAIN=$1
 
 if [[ -z "${JENKINS_USER}" ]]; then
