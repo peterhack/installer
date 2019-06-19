@@ -50,6 +50,12 @@ wait_for_deployment_in_namespace "eventing-controller" "knative-eventing"
 wait_for_deployment_in_namespace "in-memory-channel-controller" "knative-eventing"
 wait_for_deployment_in_namespace "in-memory-channel-dispatcher" "knative-eventing"
 
+# Install tiller for helm
+print_info "Installing Tiller"
+kubectl apply -f ../manifests/tiller/tiller.yaml
+helm init --service-account tiller
+print_info "Installing Tiller done"
+
 # Install keptn core services - Install keptn channels
 print_info "Installing keptn"
 ./openshift/setupKeptn.sh $CLUSTER_IPV4_CIDR $SERVICES_IPV4_CIDR
