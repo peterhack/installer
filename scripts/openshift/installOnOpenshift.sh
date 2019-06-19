@@ -34,14 +34,14 @@ oc adm policy add-scc-to-group hostpath system:authenticated
 verify_install_step "Creating hostpath SCC failed."
 
 # Install monitoring
-oc adm policy add-scc-to-user privileged -z elasticsearch-logging -n knative-monitoring
-oc adm policy add-scc-to-user anyuid system:serviceaccount:knative-monitoring:fluentd-ds
-oc adm policy add-scc-to-user privileged system:serviceaccount:knative-monitoring:fluentd-ds
-kubectl label nodes --all beta.kubernetes.io/fluentd-ds-ready="true"
-verify_kubectl $? "Labelling nodes failed."
-kubectl apply -f ../manifests/knative/monitoring.yaml
-verify_kubectl $? "Applying knative monitoring components failed."
-wait_for_all_pods_in_namespace "knative-monitoring"
+#oc adm policy add-scc-to-user privileged -z elasticsearch-logging -n knative-monitoring
+#oc adm policy add-scc-to-user anyuid system:serviceaccount:knative-monitoring:fluentd-ds
+#oc adm policy add-scc-to-user privileged system:serviceaccount:knative-monitoring:fluentd-ds
+#kubectl label nodes --all beta.kubernetes.io/fluentd-ds-ready="true"
+#verify_kubectl $? "Labelling nodes failed."
+#kubectl apply -f ../manifests/knative/monitoring.yaml
+#verify_kubectl $? "Applying knative monitoring components failed."
+#wait_for_all_pods_in_namespace "knative-monitoring"
 
 
 wait_for_deployment_in_namespace "controller" "knative-serving"
@@ -61,6 +61,12 @@ print_info "Wear uniform"
 ./common/wearUniform.sh
 verify_install_step $? "Installing keptn's uniform failed."
 print_info "Keptn wears uniform"
+
+# Install additional keptn services for openshift
+print_info "Wear Openshift uniform"
+./openshift/wearUniform.sh
+verify_install_step $? "Installing keptn's Openshift uniform failed."
+print_info "Keptn wears Openshift uniform"
 
 # Install done
 print_info "Installation of keptn complete."
