@@ -23,7 +23,6 @@ wait_for_all_pods_in_namespace "istio-system"
 install_knative serving
 install_knative eventing
 oc adm policy add-cluster-role-to-user cluster-admin -z knative-eventing-operator -n knative-eventing
-oc adm policy add-scc-to-user privileged -z elasticsearch-logging -n knative-monitoring
 
 
 # configure the host path volume plugin (needed for fluentd)
@@ -34,10 +33,15 @@ verify_install_step "Patching hostpath plugin failed."
 oc adm policy add-scc-to-group hostpath system:authenticated
 verify_install_step "Creating hostpath SCC failed."
 
-kubectl apply -f https://github.com/knative/serving/releases/download/v0.4.0/monitoring.yaml
-#verify_kubectl $? "Applying knative monitoring components failed."
-sleep 5
-#wait_for_all_pods_in_namespace "knative-monitoring"
+# Install monitoring
+oc adm policy add-scc-to-user privileged -z elasticsearch-logging -n knative-monitoring
+oc adm policy add-scc-to-user anyuid system:serviceaccount:knative-monitoring:fluentd-ds
+oc adm policy add-scc-to-user privileged system:serviceaccount:knative-monitoring:fluentd-ds
+kubectl label nodes --all beta.kubernetes.io/fluentd-ds-ready="true"
+verify_kubectl $? "Labelling nodes failed."
+kubectl apply -f ../manifests/knative/monitoring.yaml
+verify_kubectl $? "Applying knative monitoring components failed."
+wait_for_all_pods_in_namespace "knative-monitoring"
 
 
 wait_for_deployment_in_namespace "controller" "knative-serving"

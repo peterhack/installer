@@ -25,6 +25,9 @@ verify_kubectl $? "Creation of ingress route failed."
 oc create route edge istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Allow'
 verify_kubectl $? "Creation of keptn ingress route failed."
 
+oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:keptn:default
+verify_kubectl $? "Adding cluster-role failed."
+
 # Domain used for routing to keptn services
 DOMAIN=$(oc get route -n istio-system istio-wildcard-ingress -oyaml | yq r - spec.host)
 if [[ $? != 0 ]]; then
