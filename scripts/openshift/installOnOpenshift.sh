@@ -55,6 +55,7 @@ print_info "Installing Tiller"
 kubectl apply -f ../manifests/tiller/tiller.yaml
 helm init --service-account tiller
 print_info "Installing Tiller done"
+oc adm policy add-cluster-role-to-user system:serviceaccount:kube-system:tiller
 
 # Install keptn core services - Install keptn channels
 print_info "Installing keptn"
