@@ -26,12 +26,12 @@ oc adm policy add-cluster-role-to-user cluster-admin -z knative-eventing-operato
 
 
 # configure the host path volume plugin (needed for fluentd)
-kubectl create -f ../manifests/openshift/oc-scc-hostpath.yaml
-verify_kubectl $? "Deploying hostpath SCC failed."
-oc patch scc hostpath -p '{"allowHostDirVolumePlugin": true}'
-verify_install_step "Patching hostpath plugin failed."
-oc adm policy add-scc-to-group hostpath system:authenticated
-verify_install_step "Creating hostpath SCC failed."
+#kubectl create -f ../manifests/openshift/oc-scc-hostpath.yaml
+#verify_kubectl $? "Deploying hostpath SCC failed."
+#oc patch scc hostpath -p '{"allowHostDirVolumePlugin": true}'
+#verify_install_step "Patching hostpath plugin failed."
+#oc adm policy add-scc-to-group hostpath system:authenticated
+#verify_install_step "Creating hostpath SCC failed."
 
 # Install monitoring
 #oc adm policy add-scc-to-user privileged -z elasticsearch-logging -n knative-monitoring
