@@ -44,11 +44,7 @@ oc adm policy add-cluster-role-to-user cluster-admin -z knative-eventing-operato
 #wait_for_all_pods_in_namespace "knative-monitoring"
 
 
-wait_for_deployment_in_namespace "controller" "knative-serving"
 wait_for_all_pods_in_namespace "knative-serving"
-wait_for_deployment_in_namespace "eventing-controller" "knative-eventing"
-wait_for_deployment_in_namespace "in-memory-channel-controller" "knative-eventing"
-wait_for_deployment_in_namespace "in-memory-channel-dispatcher" "knative-eventing"
 
 # Install tiller for helm
 print_info "Installing Tiller"

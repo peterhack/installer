@@ -29,7 +29,7 @@ oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:kept
 verify_kubectl $? "Adding cluster-role failed."
 
 # Domain used for routing to keptn services
-DOMAIN=$(oc get route -n istio-system istio-wildcard-ingress -oyaml | yq r - spec.host)
+DOMAIN="ingress-gateway.$BASE_URL"
 if [[ $? != 0 ]]; then
   print_error "Failed to get ingress gateway information." && exit 1
 fi
