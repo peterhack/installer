@@ -30,9 +30,6 @@ verify_kubectl $? "Adding cluster-role failed."
 
 # Domain used for routing to keptn services
 DOMAIN="ingress-gateway.$BASE_URL"
-if [[ $? != 0 ]]; then
-  print_error "Failed to get ingress gateway information." && exit 1
-fi
 
 # Allow outbound traffic
 CLUSTER_IPV4_CIDR=172.30.0.0/16
@@ -54,7 +51,7 @@ rm certificate.pem
 
 # Add config map in keptn namespace that contains the domain - this will be used by other services as well
 cat ../manifests/keptn/keptn-domain-configmap.yaml | \
-  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' >> ../manifests/gen/keptn-domain-configmap.yaml
+  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' > ../manifests/gen/keptn-domain-configmap.yaml
 
 kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml
 verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
@@ -63,7 +60,7 @@ verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
 rm -f ../manifests/gen/config-domain.yaml
 
 cat ../manifests/knative/config-domain.yaml | \
-  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' >> ../manifests/gen/config-domain.yaml
+  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' > ../manifests/gen/config-domain.yaml
 
 kubectl apply -f ../manifests/gen/config-domain.yaml
 verify_kubectl $? "Creating configmap config-domain in knative-serving namespace failed."

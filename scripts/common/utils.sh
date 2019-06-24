@@ -60,7 +60,25 @@ function wait_for_deployment_in_namespace() {
   DEPL=$1; NAMESPACE=$2;
   RETRY=0; RETRY_MAX=12; 
 
-  DEPLOYMENT_LIST=$(eval "kubectl get deployments -n $NAMESPACE | awk '/$DEPL/'" | awk '{print $1}') # list of multiple deployments when starting with the same name, e.g.: event-broker, event-broker-ext
+
+  while [[ $RETRY -lt $RETRY_MAX ]]; do
+    DEPLOYMENT_LIST=$(eval "kubectl get deployments -n $NAMESPACE | awk '/$DEPL/'" | awk '{print $1}') # list of multiple deployments when starting with the same name, e.g.: event-broker, event-broker-ext
+    if [[ -z "$DEPLOYMENT_LIST" ]]; then
+      RETRY=$[$RETRY+1]
+      print_debug "Retry: ${RETRY}/${RETRY_MAX} - Wait 20s for deployment ${DEPLOYMENT} in namespace ${NAMESPACE} ..."
+      sleep 20
+    else
+      break
+    fi
+  done
+
+  if [[ $RETRY == $RETRY_MAX ]]; then
+    print_error "Deployment ${DEPLOYMENT} in namespace ${NAMESPACE} is not available"
+    exit 1
+  fi
+
+  RETRY=0
+
   verify_variable "$DEPLOYMENT_LIST" "DEPLOYMENT_LIST could not be derived from deployments list of namespace $NAMESPACE."
 
   array=(${DEPLOYMENT_LIST// / })
