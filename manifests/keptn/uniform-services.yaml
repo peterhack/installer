@@ -24,38 +24,6 @@ spec:
                   name: keptn-domain
                   key: app_domain
 ---
-apiVersion: eventing.knative.dev/v1alpha1
-kind: Subscription
-metadata:
-  name: github-service-keptn-channel-subscription
-  namespace: keptn
-spec:
-  channel:
-    apiVersion: eventing.knative.dev/v1alpha1
-    kind: Channel
-    name: keptn-channel
-  subscriber:
-    ref:
-      apiVersion: serving.knative.dev/v1alpha1
-      kind: Service
-      name: github-service
----
-apiVersion: eventing.knative.dev/v1alpha1
-kind: Subscription
-metadata:
-  name: github-service-new-artifact-subscription
-  namespace: keptn
-spec:
-  channel:
-    apiVersion: eventing.knative.dev/v1alpha1
-    kind: Channel
-    name: new-artifact
-  subscriber:
-    ref:
-      apiVersion: serving.knative.dev/v1alpha1
-      kind: Service
-      name: github-service
----
 # pitometer-service
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
@@ -71,22 +39,7 @@ spec:
         spec:
           container:
             image: keptn/pitometer-service:latest
----
-apiVersion: eventing.knative.dev/v1alpha1
-kind: Subscription
-metadata:
-  name: pitometer-service-tests-finished-subscription
-  namespace: keptn
-spec:
-  channel:
-    apiVersion: eventing.knative.dev/v1alpha1
-    kind: Channel
-    name: tests-finished
-  subscriber:
-    ref:
-      apiVersion: serving.knative.dev/v1alpha1
-      kind: Service
-      name: pitometer-service
+
 ---
 # servicenow-service
 apiVersion: serving.knative.dev/v1alpha1
@@ -104,22 +57,6 @@ spec:
           container:
             image: keptn/servicenow-service:latest
             imagePullPolicy: Always
----
-apiVersion: eventing.knative.dev/v1alpha1
-kind: Subscription
-metadata:
-  name: servicenow-service-problem-subscription
-  namespace: keptn
-spec:
-  channel:
-    apiVersion: eventing.knative.dev/v1alpha1
-    kind: Channel
-    name: problem
-  subscriber:
-    ref:
-      apiVersion: serving.knative.dev/v1alpha1
-      kind: Service
-      name: servicenow-service
 ---
 # helm-service
 apiVersion: serving.knative.dev/v1alpha1
@@ -141,22 +78,6 @@ spec:
             image: keptn/helm-service:latest
             imagePullPolicy: Always
 ---
-apiVersion: eventing.knative.dev/v1alpha1
-kind: Subscription
-metadata:
-  name: helm-service-configuration-changed-subscription
-  namespace: keptn
-spec:
-  channel:
-    apiVersion: eventing.knative.dev/v1alpha1
-    kind: Channel
-    name: configuration-changed
-  subscriber:
-    ref:
-      apiVersion: serving.knative.dev/v1alpha1
-      kind: Service
-      name: helm-service
----
 # jmeter-service
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
@@ -177,22 +98,6 @@ spec:
             image: keptn/jmeter-service:latest
             imagePullPolicy: Always
 ---
-apiVersion: eventing.knative.dev/v1alpha1
-kind: Subscription
-metadata:
-  name: jmeter-service-deployment-finished-subscription
-  namespace: keptn
-spec:
-  channel:
-    apiVersion: eventing.knative.dev/v1alpha1
-    kind: Channel
-    name: deployment-finished
-  subscriber:
-    ref:
-      apiVersion: serving.knative.dev/v1alpha1
-      kind: Service
-      name: jmeter-service
----
 # gatekeeper-service
 apiVersion: serving.knative.dev/v1alpha1
 kind: Service
@@ -212,19 +117,4 @@ spec:
           container:
             image: keptn/gatekeeper-service:latest
             imagePullPolicy: Always
----
-apiVersion: eventing.knative.dev/v1alpha1
-kind: Subscription
-metadata:
-  name: gatekeeper-service-evaluation-done-subscription
-  namespace: keptn
-spec:
-  channel:
-    apiVersion: eventing.knative.dev/v1alpha1
-    kind: Channel
-    name: evaluation-done
-  subscriber:
-    ref:
-      apiVersion: serving.knative.dev/v1alpha1
-      kind: Service
-      name: gatekeeper-service
+

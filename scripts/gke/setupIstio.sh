@@ -2,7 +2,7 @@
 CLUSTER_IPV4_CIDR=$1
 SERVICES_IPV4_CIDR=$2
 
-source ./utils.sh
+source ./common/utils.sh
 
 # Apply custom resource definitions for Istio
 kubectl apply -f ../manifests/istio/istio-crds-knative.yaml

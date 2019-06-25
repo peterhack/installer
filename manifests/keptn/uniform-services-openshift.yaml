@@ -1,0 +1,24 @@
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: openshift-route-service
+  namespace: keptn
+  labels:
+    serving.knative.dev/visibility: cluster-local
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: keptn/openshift-route-service:latest
+            imagePullPolicy: Always
+            env:
+            - name: APP_DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: keptn-domain
+                  key: app_domain

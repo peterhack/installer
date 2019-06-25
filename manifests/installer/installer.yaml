@@ -33,3 +33,5 @@ spec:
           value: GITHUB_USER_EMAIL
         - name: GITHUB_ORGANIZATION
           value: GITHUB_ORGANIZATION
+        - name: PLATFORM
+          value: PLATFORM

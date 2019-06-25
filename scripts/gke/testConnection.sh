@@ -2,7 +2,7 @@
 CLUSTER_NAME=$1
 CLUSTER_ZONE=$2
 
-source ./utils.sh
+source ./common/utils.sh
 
 # Variables for test connection to cluster
 if [[ -z "${GKE_PROJECT}" ]]; then

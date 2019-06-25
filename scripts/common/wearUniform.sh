@@ -1,9 +1,12 @@
 #!/bin/bash
-source ./utils.sh
+source ./common/utils.sh
 
 # Deploy uniform
-kubectl apply -f ../manifests/keptn/uniform.yaml --wait
-verify_kubectl $? "Deploying keptn's uniform failed."
+kubectl apply -f ../manifests/keptn/uniform-services.yaml --wait
+verify_kubectl $? "Deploying keptn's uniform-services failed."
+sleep 20
+kubectl apply -f ../manifests/keptn/uniform-subscriptions.yaml --wait
+verify_kubectl $? "Deploying keptn's uniform-subscriptions failed."
 
 ##############################################
 ## Start validation of keptn's uniform      ##

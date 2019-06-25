@@ -1,20 +1,41 @@
 #!/bin/bash
-source ./utils.sh
+CLUSTER_IPV4_CIDR=$1
+SERVICES_IPV4_CIDR=$2
+
+source ./common/utils.sh
+
+kubectl create namespace keptn
+
+# allow wildcard domains
+oc project default
+oc adm router --replicas=0
+verify_kubectl $? "Scaling down router failed"
+oc set env dc/router ROUTER_ALLOW_WILDCARD_ROUTES=true
+verify_kubectl $? "Configuration of openshift router failed"
+oc scale dc/router --replicas=1
+verify_kubectl $? "Upscaling of router failed"
+
+# create wildcard route for istio ingress gateway
+oc project istio-system
+
+BASE_URL=$(oc get route -n istio-system istio-ingressgateway -oyaml | yq r - spec.host | sed 's~istio-ingressgateway-istio-system.~~')
+
+oc create route edge istio-wildcard-ingress --service=istio-ingressgateway --hostname="www.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Allow'
+verify_kubectl $? "Creation of ingress route failed."
+oc create route edge istio-wildcard-ingress-secure-keptn --service=istio-ingressgateway --hostname="www.keptn.ingress-gateway.$BASE_URL" --port=http2 --wildcard-policy=Subdomain --insecure-policy='Allow'
+verify_kubectl $? "Creation of keptn ingress route failed."
+
+oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:keptn:default
+verify_kubectl $? "Adding cluster-role failed."
 
 # Domain used for routing to keptn services
-DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].hostname)
-if [[ $? != 0 ]]; then
-  print_error "Failed to get ingress gateway information." && exit 1
-fi
-if [[ $DOMAIN = "null" ]]; then
-  print_info "Could not get ingress gateway domain name. Trying to retrieve IP address instead."
-  DOMAIN=$(kubectl get svc istio-ingressgateway -o json -n istio-system | jq -r .status.loadBalancer.ingress[0].ip)
-  if [[ $DOMAIN = "null" ]]; then
-    DOMAIN=""
-  fi
-  verify_variable "$DOMAIN" "DOMAIN is empty and could not be derived from the Istio ingress gateway."
-  DOMAIN="$DOMAIN.xip.io"
-fi
+DOMAIN="ingress-gateway.$BASE_URL"
+
+# Allow outbound traffic
+CLUSTER_IPV4_CIDR=172.30.0.0/16
+SERVICES_IPV4_CIDR=10.1.0.0/16
+# kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "172.29.0.0/16" | kubectl apply -f - 
+kubectl get configmap config-network -n knative-serving -o=yaml | yq w - data['istio.sidecar.includeOutboundIPRanges'] "$CLUSTER_IPV4_CIDR,$SERVICES_IPV4_CIDR" | kubectl apply -f - 
 
 # Set up SSL
 openssl req -nodes -newkey rsa:2048 -keyout key.pem -out certificate.pem  -x509 -days 365 -subj "/CN=$DOMAIN"
@@ -29,21 +50,19 @@ rm key.pem
 rm certificate.pem
 
 # Add config map in keptn namespace that contains the domain - this will be used by other services as well
-rm ../manifests/gen/keptn-domain-configmap.yaml
-
 cat ../manifests/keptn/keptn-domain-configmap.yaml | \
-  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' >> ../manifests/gen/keptn-domain-configmap.yaml
+  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' > ../manifests/gen/keptn-domain-configmap.yaml
 
-kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml --wait
+kubectl apply -f ../manifests/gen/keptn-domain-configmap.yaml
 verify_kubectl $? "Creating configmap keptn-domain in keptn namespace failed."
 
 # Configure knative serving default domain
 rm -f ../manifests/gen/config-domain.yaml
 
 cat ../manifests/knative/config-domain.yaml | \
-  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' >> ../manifests/gen/config-domain.yaml
+  sed 's~DOMAIN_PLACEHOLDER~'"$DOMAIN"'~' > ../manifests/gen/config-domain.yaml
 
-kubectl apply -f ../manifests/gen/config-domain.yaml --wait
+kubectl apply -f ../manifests/gen/config-domain.yaml
 verify_kubectl $? "Creating configmap config-domain in knative-serving namespace failed."
 
 # Creating cluster role binding
@@ -80,7 +99,7 @@ rm -f ../manifests/keptn/gen/core.yaml
 cat ../manifests/keptn/core.yaml | \
   sed 's~CHANNEL_URI_PLACEHOLDER~'"$KEPTN_CHANNEL_URI"'~' >> ../manifests/keptn/gen/core.yaml
   
-kubectl apply -f ../manifests/keptn/gen/core.yaml --wait
+kubectl apply -f ../manifests/keptn/gen/core.yaml
 verify_kubectl $? "Deploying keptn core components failed."
 
 ##############################################
@@ -89,6 +108,8 @@ verify_kubectl $? "Deploying keptn core components failed."
 wait_for_all_pods_in_namespace "keptn"
 
 wait_for_deployment_in_namespace "event-broker" "keptn" # Wait function also waits for eventbroker-ext
-wait_for_deployment_in_namespace "authenticator" "keptn"
+wait_for_deployment_in_namespace "auth" "keptn"
 wait_for_deployment_in_namespace "control" "keptn"
-wait_for_deployment_in_namespace "bridge" "keptn"
+
+helm init
+oc adm policy  add-cluster-role-to-user cluster-admin system:serviceaccount:kube-system:default
