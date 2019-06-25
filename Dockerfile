@@ -42,7 +42,7 @@ RUN wget -q https://storage.googleapis.com/kubernetes-release/release/v$KUBE_VER
 #  tar xzvf openshift*tar.gz && \
 #  cp openshift-origin-client-tools-*/oc /bin/oc
 ARG OC_VERSION=4.1.2
-RUN wget https://mirror.openshift.com/pub/openshift-v4/clients/oc/4.1/linux/oc.tar.gz
+RUN wget https://mirror.openshift.com/pub/openshift-v4/clients/oc/4.1/linux/oc.tar.gz && \
 tar xzvf oc.tar.gz && \
 cp oc /bin/oc
 
