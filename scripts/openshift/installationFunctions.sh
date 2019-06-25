@@ -158,7 +158,7 @@ function install_istio {
 	    password: admin
 	    prefix: kiali/
 	EOF
-    timeout 900 '$OC_CMD get pods -n istio-system && [[ $($OC_CMD get pods -n istio-system | grep openshift-ansible-istio-installer | grep -c Completed) -gt 0 ]]'
+    timeout 9000 '$OC_CMD get pods -n istio-system && [[ $($OC_CMD get pods -n istio-system | grep openshift-ansible-istio-installer | grep -c Completed) -gt 0 ]]'
 
     # Scale down unused services deployed by the istio operator. The
     # jaeger pods will fail anyway due to the elasticsearch pod failing

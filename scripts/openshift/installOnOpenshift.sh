@@ -1,4 +1,4 @@
-#!/bin/bash
++#!/bin/bash
 
 source ./openshift/installationFunctions.sh
 source ./common/utils.sh
@@ -15,15 +15,20 @@ if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
   verify_variable "$SERVICES_IPV4_CIDR" "SERVICES_IPV4_CIDR is not defined in environment variable nor in creds.json file." 
 fi
 
+print_info "Installing Operator"
 install_olm
+print_info "Installing Operator done"
 install_catalogsources
+print_info "Installing Istio"
 install_istio
+print_info "Installing Istio done"
 
 wait_for_all_pods_in_namespace "istio-system"
+print_info "Installing knative"
 install_knative serving
 install_knative eventing
 oc adm policy add-cluster-role-to-user cluster-admin -z knative-eventing-operator -n knative-eventing
-
+print_info "Installing knative done"
 
 # configure the host path volume plugin (needed for fluentd)
 #kubectl create -f ../manifests/openshift/oc-scc-hostpath.yaml
