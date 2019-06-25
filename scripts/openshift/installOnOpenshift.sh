@@ -15,6 +15,9 @@ if [[ -z "${SERVICES_IPV4_CIDR}" ]]; then
   verify_variable "$SERVICES_IPV4_CIDR" "SERVICES_IPV4_CIDR is not defined in environment variable nor in creds.json file." 
 fi
 
+print_info "OpenShift User Is: $(oc whoami)"
+wait 300
+
 print_info "Installing Operator"
 install_olm
 print_info "Installing Operator done"
