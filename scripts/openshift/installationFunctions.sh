@@ -65,11 +65,12 @@ function check_minikube {
   ) >/dev/null 2>&1
 }
 
+# updated to identify v1.13 vs v1.12
 function check_openshift_4 {
   if $OC_CMD api-resources >/dev/null; then
     $OC_CMD api-resources | grep machineconfigs | grep machineconfiguration.openshift.io > /dev/null 2>&1
   else
-    ($OC_CMD get ns openshift && $OC_CMD version | tail -1 | grep "v1.12") >/dev/null 2>&1
+    ($OC_CMD get ns openshift && $OC_CMD version | tail -1 | grep "v1.13") >/dev/null 2>&1
   fi
 }
 
